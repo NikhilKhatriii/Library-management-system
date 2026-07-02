@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../../../../core/constants/app_colors.dart';
+
+part 'user_role.g.dart';
 
 /// The four roles supported by LibreFlow. Each role maps to its own
 /// dashboard, navigation shell, and permission set.
+@HiveType(typeId: 0)
 enum UserRole {
+  @HiveField(0)
   admin,
+  @HiveField(1)
   librarian,
+  @HiveField(2)
   student,
+  @HiveField(3)
   teacher;
 
   String get label => switch (this) {

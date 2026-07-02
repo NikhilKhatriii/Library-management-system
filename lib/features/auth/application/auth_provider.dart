@@ -1,9 +1,12 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/result.dart';
+import '../data/datasources/auth_local_datasource.dart';
+import '../data/repositories/auth_repository_impl.dart';
 import '../domain/models/user_model.dart';
 import '../domain/models/user_role.dart';
+import '../domain/repositories/auth_repository.dart';
 
 /// Authentication status used to drive [GoRouter] redirects.
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -36,28 +39,23 @@ class AuthState {
   }
 }
 
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepositoryImpl(HiveAuthLocalDataSource());
+});
+
 /// Handles authentication for the app.
-///
-/// NOTE: This currently uses an in-memory + SharedPreferences mock backend
-/// so the UI is fully interactive out of the box. Swap [_mockNetworkLogin]
-/// for a real repository call once the REST API is available — the rest of
-/// the app only depends on this provider's public interface, so no other
-/// code needs to change.
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState()) {
+  AuthNotifier(this._repository) : super(const AuthState()) {
     _restoreSession();
   }
 
-  Future<void> _restoreSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final remember = prefs.getBool(StorageKeys.rememberMe) ?? false;
-    final rawUser = prefs.getString(StorageKeys.currentUser);
+  final AuthRepository _repository;
 
-    if (remember && rawUser != null) {
-      final user = UserModel.fromJson(
-        jsonDecode(rawUser) as Map<String, dynamic>,
-      );
-      state = state.copyWith(status: AuthStatus.authenticated, user: user);
+  Future<void> _restoreSession() async {
+    final result = await _repository.restoreSession();
+    
+    if (result is Success<UserModel?> && result.data != null) {
+      state = state.copyWith(status: AuthStatus.authenticated, user: result.data);
     } else {
       state = state.copyWith(status: AuthStatus.unauthenticated);
     }
@@ -70,20 +68,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
     bool rememberMe = false,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    final user = await _mockNetworkLogin(email: email, role: role);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(StorageKeys.rememberMe, rememberMe);
-    await prefs.setString(
-      StorageKeys.currentUser,
-      jsonEncode(user.toJson()),
+    
+    final result = await _repository.login(
+      email: email,
+      password: password,
+      role: role,
     );
 
-    state = state.copyWith(
-      status: AuthStatus.authenticated,
-      user: user,
-      isLoading: false,
-    );
+    if (result is Success<UserModel>) {
+      if (rememberMe) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(StorageKeys.rememberMe, true);
+      }
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: result.data,
+        isLoading: false,
+      );
+    } else if (result is Failure<UserModel>) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: result.message,
+      );
+    }
   }
 
   Future<void> register({
@@ -93,72 +100,54 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required UserRole role,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-
-    final user = UserModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+    
+    final result = await _repository.register(
       name: name,
       email: email,
+      password: password,
       role: role,
     );
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(StorageKeys.rememberMe, true);
-    await prefs.setString(
-      StorageKeys.currentUser,
-      jsonEncode(user.toJson()),
-    );
-
-    state = state.copyWith(
-      status: AuthStatus.authenticated,
-      user: user,
-      isLoading: false,
-    );
+    if (result is Success<UserModel>) {
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: result.data,
+        isLoading: false,
+      );
+    } else if (result is Failure<UserModel>) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: result.message,
+      );
+    }
   }
 
   Future<void> sendPasswordReset(String email) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    await Future<void>.delayed(const Duration(milliseconds: 700));
-    state = state.copyWith(isLoading: false);
+    final result = await _repository.sendPasswordReset(email);
+    state = state.copyWith(
+      isLoading: false,
+      errorMessage: result is Failure ? (result as Failure).message : null,
+    );
   }
 
   Future<bool> verifyOtp(String code) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    final result = await _repository.verifyOtp(code);
     state = state.copyWith(isLoading: false);
-    return code.length == 6;
+    
+    if (result is Success<bool>) {
+      return result.data;
+    }
+    return false;
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(StorageKeys.currentUser);
-    await prefs.setBool(StorageKeys.rememberMe, false);
+    await _repository.logout();
     state = const AuthState(status: AuthStatus.unauthenticated);
-  }
-
-  Future<UserModel> _mockNetworkLogin({
-    required String email,
-    required UserRole role,
-  }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-    final namePart = email.split('@').first.replaceAll('.', ' ');
-    final displayName = namePart
-        .split(' ')
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
-
-    return UserModel(
-      id: email.hashCode.toString(),
-      name: displayName.isEmpty ? 'LibreFlow User' : displayName,
-      email: email,
-      role: role,
-      membershipNumber: role == UserRole.student || role == UserRole.teacher
-          ? 'LF-${1000 + email.hashCode.abs() % 9000}'
-          : null,
-    );
   }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  return AuthNotifier(ref.watch(authRepositoryProvider));
 });

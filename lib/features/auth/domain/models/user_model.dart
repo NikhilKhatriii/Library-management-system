@@ -1,11 +1,15 @@
 import 'package:equatable/equatable.dart';
+import 'package:hive/hive.dart';
 import 'user_role.dart';
+
+part 'user_model.g.dart';
 
 /// Represents an authenticated LibreFlow user.
 ///
 /// This is a plain domain model, deliberately free of any persistence or
 /// networking concerns (Clean Architecture: Domain layer). Serialization
 /// lives in the Data layer once a real backend is wired in.
+@HiveType(typeId: 1)
 class UserModel extends Equatable {
   const UserModel({
     required this.id,
@@ -17,12 +21,19 @@ class UserModel extends Equatable {
     this.department,
   });
 
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String name;
+  @HiveField(2)
   final String email;
+  @HiveField(3)
   final UserRole role;
+  @HiveField(4)
   final String? photoUrl;
+  @HiveField(5)
   final String? membershipNumber;
+  @HiveField(6)
   final String? department;
 
   String get initials {
