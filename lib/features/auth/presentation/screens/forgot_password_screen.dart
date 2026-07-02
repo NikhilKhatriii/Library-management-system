@@ -8,8 +8,6 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
-import '../../application/auth_provider.dart';
-
 import '../../../../shared/widgets/glass_card.dart';
 import '../../application/auth_provider.dart';
 
@@ -88,7 +86,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             Text('Reset Password', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              "Enter your email to receive a secure link.",
+              'Enter your email to receive a secure link.',
               style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
             ),
             const SizedBox(height: AppSpacing.xl),

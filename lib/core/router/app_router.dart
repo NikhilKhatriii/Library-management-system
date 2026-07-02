@@ -18,8 +18,8 @@ import '../../features/books/presentation/screens/add_book_screen.dart';
 import '../../features/books/presentation/screens/book_detail_screen.dart';
 import '../../features/books/presentation/screens/books_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/activity/presentation/screens/activity_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
-import '../../shared/widgets/module_placeholder.dart';
 import 'route_names.dart';
 
 /// A [Listenable] bridge so [GoRouter] refreshes its redirect logic whenever
@@ -139,12 +139,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.activity,
                 name: RouteNames.activity,
-                builder: (context, state) => const ModulePlaceholder(
-                  title: 'Activity',
-                  description:
-                      'Issue / return history, fines, reservations and QR '
-                      'check-in/out will appear here once that module is built.',
-                ),
+                builder: (context, state) => const ActivityScreen(),
               ),
             ],
           ),

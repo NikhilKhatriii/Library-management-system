@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/result.dart';
 import '../data/datasources/auth_local_datasource.dart';
+import '../data/datasources/firebase_auth_datasource.dart';
+import '../data/repositories/firebase_auth_repository.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/models/user_model.dart';
 import '../domain/models/user_role.dart';
 import '../domain/repositories/auth_repository.dart';
+import '../../../main.dart' show firebaseInitialized;
 
 /// Authentication status used to drive [GoRouter] redirects.
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -38,6 +41,12 @@ class AuthState {
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  if (firebaseInitialized) {
+    return FirebaseAuthRepository(
+      FirebaseAuthDataSource(),
+      HiveAuthLocalDataSource(),
+    );
+  }
   return AuthRepositoryImpl(HiveAuthLocalDataSource());
 });
 
@@ -140,6 +149,42 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _repository.logout();
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<Result<UserModel>> updateProfile({
+    required String name,
+    required String email,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    final result = await _repository.updateProfile(name: name, email: email);
+    if (result is Success<UserModel>) {
+      state = state.copyWith(
+        user: result.data,
+        isLoading: false,
+      );
+    } else if (result is Failure<UserModel>) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: result.message,
+      );
+    }
+    return result;
+  }
+
+  Future<Result<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    final result = await _repository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+    state = state.copyWith(isLoading: false);
+    if (result is Failure) {
+      state = state.copyWith(errorMessage: result.message);
+    }
+    return result;
   }
 }
 

@@ -165,12 +165,24 @@ class MockBookRepository implements BookRepository {
           publisherName: 'Mock Publisher ${(i % 4) + 1}',
           publishDate: DateTime(2020, 1, i % 28 + 1),
           description: 'This is a mock description for book $i.',
-          coverUrl: 'https://via.placeholder.com/150',
+          coverUrl: _getMockCoverUrl(i),
           totalCopies: 5,
           availableCopies: 2,
           rating: 4.0,
         ),
     ];
+  }
+
+  static String _getMockCoverUrl(int index) {
+    final covers = [
+      'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=300',
+      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300',
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300',
+      'https://images.unsplash.com/photo-1476275466078-4007374efbbe?q=80&w=300',
+      'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=300',
+      'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=300',
+    ];
+    return covers[index % covers.length];
   }
 
   static List<Category> _generateMockCategories() {

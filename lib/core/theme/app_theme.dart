@@ -91,19 +91,25 @@ abstract final class AppTheme {
         ),
         hintStyle: TextStyle(color: textSecondary),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.royalBlue,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
+      elevatedButtonTheme: const ElevatedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(AppColors.royalBlue),
+          foregroundColor: WidgetStatePropertyAll(Colors.white),
+          elevation: WidgetStatePropertyAll(0),
+          padding: WidgetStatePropertyAll(
+            EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
+            ),
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          textStyle: WidgetStatePropertyAll(
+            TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(

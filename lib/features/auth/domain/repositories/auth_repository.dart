@@ -24,4 +24,14 @@ abstract interface class AuthRepository {
   Future<Result<void>> sendPasswordReset(String email);
 
   Future<Result<bool>> verifyOtp(String code);
+
+  Future<Result<UserModel>> updateProfile({
+    required String name,
+    required String email,
+  });
+
+  Future<Result<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }

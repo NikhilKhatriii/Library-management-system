@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
 import 'user_role.dart';
@@ -19,6 +20,8 @@ class UserModel extends Equatable {
     this.photoUrl,
     this.membershipNumber,
     this.department,
+    this.isApproved = true,
+    this.createdAt,
   });
 
   @HiveField(0)
@@ -35,6 +38,10 @@ class UserModel extends Equatable {
   final String? membershipNumber;
   @HiveField(6)
   final String? department;
+  @HiveField(7)
+  final bool isApproved;
+  @HiveField(8)
+  final DateTime? createdAt;
 
   String get initials {
     final parts = name.trim().split(RegExp(r'\s+'));
@@ -52,6 +59,8 @@ class UserModel extends Equatable {
     String? photoUrl,
     String? membershipNumber,
     String? department,
+    bool? isApproved,
+    DateTime? createdAt,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -61,6 +70,8 @@ class UserModel extends Equatable {
       photoUrl: photoUrl ?? this.photoUrl,
       membershipNumber: membershipNumber ?? this.membershipNumber,
       department: department ?? this.department,
+      isApproved: isApproved ?? this.isApproved,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -72,7 +83,42 @@ class UserModel extends Equatable {
         'photoUrl': photoUrl,
         'membershipNumber': membershipNumber,
         'department': department,
+        'isApproved': isApproved,
+        'createdAt': createdAt?.toIso8601String(),
       };
+
+  /// Serialize to a Firestore-friendly map.
+  Map<String, dynamic> toFirestore() => {
+        'name': name,
+        'email': email,
+        'role': role.name,
+        'photoUrl': photoUrl,
+        'membershipNumber': membershipNumber,
+        'department': department,
+        'isApproved': isApproved,
+        'createdAt': createdAt != null
+            ? Timestamp.fromDate(createdAt!)
+            : FieldValue.serverTimestamp(),
+      };
+
+  /// Deserialize from a Firestore document snapshot.
+  factory UserModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return UserModel(
+      id: doc.id,
+      name: data['name'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      role: UserRole.values.firstWhere(
+        (r) => r.name == data['role'],
+        orElse: () => UserRole.student,
+      ),
+      photoUrl: data['photoUrl'] as String?,
+      membershipNumber: data['membershipNumber'] as String?,
+      department: data['department'] as String?,
+      isApproved: data['isApproved'] as bool? ?? true,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+    );
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -83,9 +129,11 @@ class UserModel extends Equatable {
       photoUrl: json['photoUrl'] as String?,
       membershipNumber: json['membershipNumber'] as String?,
       department: json['department'] as String?,
+      isApproved: json['isApproved'] as bool? ?? true,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, email, role, photoUrl];
+  List<Object?> get props => [id, name, email, role, photoUrl, isApproved, createdAt];
 }

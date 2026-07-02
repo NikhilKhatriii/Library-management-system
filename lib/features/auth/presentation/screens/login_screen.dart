@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
-import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/glass_card.dart';
+import '../../../../shared/widgets/primary_button.dart';
 import '../../application/auth_provider.dart';
 import '../../domain/models/user_role.dart';
 import '../widgets/role_selector.dart';
@@ -78,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Icons.auto_stories_rounded,
                     size: 64,
                     color: AppColors.royalBlue,
-                  ).animate().scale(duration: 600.ms, curve: Curves.backOut),
+                  ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
                     'LibreFlow',

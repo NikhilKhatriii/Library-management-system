@@ -7,6 +7,9 @@ import '../../../../shared/widgets/primary_button.dart';
 import '../../application/books_provider.dart';
 import '../../domain/models/book.dart';
 
+import '../../../auth/application/auth_provider.dart';
+import '../../../activity/application/activity_provider.dart';
+
 class BookDetailScreen extends ConsumerWidget {
   const BookDetailScreen({super.key, required this.bookId});
 
@@ -14,22 +17,14 @@ class BookDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(bookRepositoryProvider);
+    final bookAsync = ref.watch(bookDetailsProvider(bookId));
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: FutureBuilder(
-        future: repository.getBookById(bookId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError || snapshot.data is! Success) {
-            return const Center(child: Text('Error loading book'));
-          }
-          
-          final book = (snapshot.data as Success<Book>).data;
-
+      body: bookAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error loading book: $err')),
+        data: (book) {
           return CustomScrollView(
             slivers: [
               _buildAppBar(context, book),
@@ -50,7 +45,7 @@ class BookDetailScreen extends ConsumerWidget {
                         style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
                       ),
                       const SizedBox(height: AppSpacing.xxl),
-                      _buildActions(context, book),
+                      _buildActions(context, ref, book),
                       const SizedBox(height: AppSpacing.xl),
                     ],
                   ),
@@ -162,13 +157,93 @@ class BookDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActions(BuildContext context, Book book) {
+  Widget _buildActions(BuildContext context, WidgetRef ref, Book book) {
+    final user = ref.watch(authProvider).user;
+    final activityState = ref.watch(activityProvider);
+
+    if (user == null) return const SizedBox.shrink();
+
+    // Check if user has already issued this book
+    final hasIssued = activityState.transactions.any(
+      (tx) => tx.bookId == book.id && tx.userId == user.id && tx.status == 'active',
+    );
+
+    final String buttonLabel;
+    if (hasIssued) {
+      buttonLabel = 'Return Book';
+    } else if (book.availableCopies > 0) {
+      buttonLabel = 'Issue Book';
+    } else {
+      buttonLabel = 'Reserve Now';
+    }
+
     return Row(
       children: [
         Expanded(
           child: PrimaryButton(
-            label: book.isAvailable ? 'Issue Book' : 'Reserve Now',
-            onPressed: () {},
+            label: buttonLabel,
+            isLoading: activityState.isLoading,
+            onPressed: () async {
+              if (hasIssued) {
+                // Return book
+                final tx = activityState.transactions.firstWhere(
+                  (t) => t.bookId == book.id && t.userId == user.id && t.status == 'active',
+                );
+                final res = await ref.read(activityProvider.notifier).returnBook(transactionId: tx.id);
+                if (context.mounted) {
+                  if (res is Success) {
+                    ref.invalidate(bookDetailsProvider(book.id));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Book returned successfully!')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text((res as Failure).message)),
+                    );
+                  }
+                }
+              } else if (book.availableCopies > 0) {
+                // Issue book
+                final res = await ref.read(activityProvider.notifier).issueBook(
+                      userId: user.id,
+                      userName: user.name,
+                      bookId: book.id,
+                      bookTitle: book.title,
+                    );
+                if (context.mounted) {
+                  if (res is Success) {
+                    ref.invalidate(bookDetailsProvider(book.id));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Book issued successfully!')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text((res as Failure).message)),
+                    );
+                  }
+                }
+              } else {
+                // Reserve book
+                final res = await ref.read(activityProvider.notifier).reserveBook(
+                      userId: user.id,
+                      userName: user.name,
+                      bookId: book.id,
+                      bookTitle: book.title,
+                    );
+                if (context.mounted) {
+                  if (res is Success) {
+                    ref.invalidate(bookDetailsProvider(book.id));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Book reserved successfully!')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text((res as Failure).message)),
+                    );
+                  }
+                }
+              }
+            },
           ),
         ),
         const SizedBox(width: AppSpacing.md),

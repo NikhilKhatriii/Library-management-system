@@ -112,4 +112,41 @@ class AuthRepositoryImpl implements AuthRepository {
       return Failure('OTP verification failed', e is Exception ? e : Exception(e.toString()));
     }
   }
+
+  @override
+  Future<Result<UserModel>> updateProfile({
+    required String name,
+    required String email,
+  }) async {
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      final currentUser = await _localDataSource.getUser();
+      if (currentUser == null) {
+        return const Failure('No user session found');
+      }
+
+      final updatedUser = currentUser.copyWith(
+        name: name,
+        email: email,
+      );
+
+      await _localDataSource.saveUser(updatedUser);
+      return Success(updatedUser);
+    } catch (e) {
+      return Failure('Failed to update profile', e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+      return const Success(null);
+    } catch (e) {
+      return Failure('Failed to change password', e is Exception ? e : Exception(e.toString()));
+    }
+  }
 }
