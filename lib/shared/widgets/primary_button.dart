@@ -55,26 +55,40 @@ class PrimaryButton extends StatelessWidget {
             ),
     );
 
-    return SizedBox(
-      width: expand ? double.infinity : null,
-      height: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          gradient: onPressed == null ? null : AppColors.primaryGradient,
-          color: onPressed == null ? AppColors.primary.withValues(alpha: 0.4) : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+    return AnimatedScale(
+      duration: AppDurations.fast,
+      scale: onPressed == null ? 1.0 : 1.0, // Scale logic can be added with gesture detector
+      child: SizedBox(
+        width: expand ? double.infinity : null,
+        height: 52,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.md),
-            onTap: onPressed == null
-                ? null
-                : () {
-                    HapticFeedback.lightImpact();
-                    onPressed!();
-                  },
-            child: Center(child: child),
+            gradient: onPressed == null ? null : AppColors.indigoGradient,
+            color: onPressed == null ? AppColors.royalBlue.withValues(alpha: 0.4) : null,
+            boxShadow: onPressed == null ? null : [
+              BoxShadow(
+                color: AppColors.secondary.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              onTap: onPressed == null
+                  ? null
+                  : () {
+                      HapticFeedback.lightImpact();
+                      onPressed!();
+                    },
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: expand ? 0 : AppSpacing.xl),
+                child: Center(child: child),
+              ),
+            ),
           ),
         ),
       ),

@@ -16,6 +16,7 @@ class AppTextField extends StatefulWidget {
     this.autofillHints,
     this.onFieldSubmitted,
     this.enabled = true,
+    this.maxLines = 1,
   });
 
   final String label;
@@ -29,6 +30,7 @@ class AppTextField extends StatefulWidget {
   final Iterable<String>? autofillHints;
   final void Function(String)? onFieldSubmitted;
   final bool enabled;
+  final int maxLines;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -39,25 +41,45 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            widget.label,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+            ),
+          ),
+        ),
         TextFormField(
           controller: widget.controller,
           obscureText: _obscured,
           enabled: widget.enabled,
+          maxLines: widget.maxLines,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           autofillHints: widget.autofillHints,
           validator: widget.validator,
           onFieldSubmitted: widget.onFieldSubmitted,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: widget.hint,
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.hintColor.withValues(alpha: 0.5),
+            ),
             prefixIcon: widget.prefixIcon == null
                 ? null
-                : Icon(widget.prefixIcon, size: 20),
+                : Icon(
+                    widget.prefixIcon,
+                    size: 20,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                  ),
             suffixIcon: widget.obscureText
                 ? IconButton(
                     icon: Icon(
@@ -65,10 +87,33 @@ class _AppTextFieldState extends State<AppTextField> {
                           ? Icons.visibility_off_rounded
                           : Icons.visibility_rounded,
                       size: 20,
+                      color: theme.hintColor,
                     ),
                     onPressed: () => setState(() => _obscured = !_obscured),
                   )
                 : null,
+            filled: true,
+            fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.02),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide(color: theme.colorScheme.error, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
           ),
         ),
       ],

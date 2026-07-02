@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/result.dart';
-import '../../auth/domain/models/user_role.dart';
+import '../../../auth/domain/models/user_role.dart';
 import '../../domain/models/dashboard_stat.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 

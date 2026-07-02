@@ -22,21 +22,37 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fill = isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white.withValues(alpha: 0.55);
-    final border = isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.7);
+    final fill = isDark 
+        ? Colors.white.withValues(alpha: 0.05) 
+        : Colors.white.withValues(alpha: 0.6);
+    final border = isDark 
+        ? Colors.white.withValues(alpha: 0.1) 
+        : Colors.white.withValues(alpha: 0.2);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: border, width: 1),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-          child: child,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: fill,
+              borderRadius: BorderRadius.circular(borderRadius),
+              border: Border.all(color: border, width: 1.5),
+            ),
+            child: child,
+          ),
         ),
       ),
     );

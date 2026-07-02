@@ -2,6 +2,7 @@
 /// one place avoids typo-driven navigation bugs and makes refactors safe.
 abstract final class RouteNames {
   static const String splash = 'splash';
+  static const String onboarding = 'onboarding';
   static const String login = 'login';
   static const String register = 'register';
   static const String forgotPassword = 'forgotPassword';
@@ -15,6 +16,7 @@ abstract final class RouteNames {
 
 abstract final class RoutePaths {
   static const String splash = '/splash';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';

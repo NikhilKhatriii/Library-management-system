@@ -5,21 +5,22 @@ import 'package:flutter/material.dart';
 /// Keeping every color in one place makes it trivial to keep Light/Dark
 /// themes, charts, and ad-hoc widgets visually consistent.
 abstract final class AppColors {
-  // Brand
-  static const Color primary = Color(0xFF2563EB);
-  static const Color secondary = Color(0xFF7C3AED);
-  static const Color accent = Color(0xFF10B981);
+  // Brand - Enterprise Palette
+  static const Color primary = Color(0xFF1E293B); // Deep Navy
+  static const Color secondary = Color(0xFF6366F1); // Indigo
+  static const Color royalBlue = Color(0xFF2563EB);
+  static const Color accent = Color(0xFF10B981); // Emerald Green
 
   // Surfaces
-  static const Color backgroundLight = Color(0xFFF8FAFC);
-  static const Color backgroundDark = Color(0xFF0F172A);
+  static const Color backgroundLight = Color(0xFFF8FAFC); // Soft White
+  static const Color backgroundDark = Color(0xFF0F172A); // Charcoal/Dark Navy
   static const Color surfaceLight = Colors.white;
   static const Color surfaceDark = Color(0xFF1E293B);
 
   // Semantic
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
+  static const Color error = Color(0xFFDC2626); // Crimson
   static const Color info = Color(0xFF3B82F6);
 
   // Text
@@ -32,17 +33,17 @@ abstract final class AppColors {
   static const Color borderLight = Color(0xFFE2E8F0);
   static const Color borderDark = Color(0xFF334155);
 
-  // Gradients
+  // Gradients - Apple-like
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [primary, secondary],
+    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
   );
 
-  static const LinearGradient accentGradient = LinearGradient(
+  static const LinearGradient indigoGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [accent, Color(0xFF059669)],
+    colors: [Color(0xFF818CF8), Color(0xFF6366F1)],
   );
 
   /// Fixed palette used to color category tags / charts deterministically.

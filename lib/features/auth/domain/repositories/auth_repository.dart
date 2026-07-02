@@ -7,6 +7,7 @@ abstract interface class AuthRepository {
     required String email,
     required String password,
     required UserRole role,
+    bool rememberMe = false,
   });
 
   Future<Result<UserModel>> register({

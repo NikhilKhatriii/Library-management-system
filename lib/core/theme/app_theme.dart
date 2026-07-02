@@ -25,7 +25,7 @@ abstract final class AppTheme {
 
     final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: AppColors.primary,
+      primary: AppColors.royalBlue,
       onPrimary: Colors.white,
       secondary: AppColors.secondary,
       onSecondary: Colors.white,
@@ -47,14 +47,14 @@ abstract final class AppTheme {
       splashFactory: InkSparkle.splashFactory,
       textTheme: AppTextStyles.textTheme(textPrimary, textSecondary),
       appBarTheme: AppBarTheme(
-        backgroundColor: background,
+        backgroundColor: Colors.transparent,
         foregroundColor: textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: AppTextStyles.textTheme(textPrimary, textSecondary)
-            .titleLarge,
+            .titleLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
       cardTheme: CardThemeData(
         color: surface,
@@ -62,38 +62,38 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          side: BorderSide(color: border, width: 1),
+          side: BorderSide(color: border, width: 1.5),
         ),
         margin: EdgeInsets.zero,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surface,
+        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
+          horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: border),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: border),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(color: AppColors.royalBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
         hintStyle: TextStyle(color: textSecondary),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.royalBlue,
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(
@@ -103,7 +103,7 @@ abstract final class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -135,11 +135,17 @@ abstract final class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surface,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+        indicatorColor: AppColors.royalBlue.withValues(alpha: 0.1),
         surfaceTintColor: Colors.transparent,
         labelTextStyle: WidgetStatePropertyAll(
           TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textPrimary),
         ),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.royalBlue, size: 26);
+          }
+          return IconThemeData(color: textSecondary, size: 24);
+        }),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: background,

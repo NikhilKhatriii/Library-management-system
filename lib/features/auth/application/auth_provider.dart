@@ -1,6 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/result.dart';
 import '../data/datasources/auth_local_datasource.dart';
 import '../data/repositories/auth_repository_impl.dart';
@@ -73,13 +71,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       email: email,
       password: password,
       role: role,
+      rememberMe: rememberMe,
     );
 
     if (result is Success<UserModel>) {
-      if (rememberMe) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool(StorageKeys.rememberMe, true);
-      }
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: result.data,
@@ -127,7 +122,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final result = await _repository.sendPasswordReset(email);
     state = state.copyWith(
       isLoading: false,
-      errorMessage: result is Failure ? (result as Failure).message : null,
+      errorMessage: result is Failure ? result.message : null,
     );
   }
 

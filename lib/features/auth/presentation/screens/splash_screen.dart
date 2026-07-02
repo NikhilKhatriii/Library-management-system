@@ -13,52 +13,97 @@ class SplashScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 96,
-                height: 96,
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundDark,
+        ),
+        child: Stack(
+          children: [
+            // Background subtle gradient
+            Positioned.fill(
+              child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                ),
-                child: const Icon(
-                  Icons.auto_stories_rounded,
-                  color: Colors.white,
-                  size: 48,
-                ),
-              ).animate().scale(
-                    duration: AppDurations.slow,
-                    curve: Curves.easeOutBack,
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 1.2,
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.15),
+                      Colors.transparent,
+                    ],
                   ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                AppStrings.appName,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                    ),
-              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                AppStrings.tagline,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-              ).animate().fadeIn(delay: 350.ms),
-              const SizedBox(height: AppSpacing.xxl),
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.4,
-                  valueColor: AlwaysStoppedAnimation(Colors.white),
                 ),
-              ).animate().fadeIn(delay: 500.ms),
-            ],
-          ),
+              ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+               .fadeIn(duration: 3.seconds)
+               .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 10.seconds),
+            ),
+            
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // App Logo
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.auto_stories_rounded,
+                      color: Colors.white,
+                      size: 52,
+                    ),
+                  ).animate()
+                    .scale(
+                      duration: 800.ms,
+                      curve: Curves.elasticOut,
+                    )
+                    .shimmer(delay: 1.seconds, duration: 2.seconds),
+                    
+                  const SizedBox(height: AppSpacing.xl),
+                  
+                  // App Name
+                  Text(
+                    AppStrings.appName,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -1,
+                        ),
+                  ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
+                  
+                  const SizedBox(height: AppSpacing.xs),
+                  
+                  // Tagline
+                  Text(
+                    AppStrings.tagline,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                  ).animate().fadeIn(delay: 700.ms),
+                  
+                  const SizedBox(height: AppSpacing.xxl),
+                  
+                  // Premium Loading Animation
+                  SizedBox(
+                    width: 40,
+                    child: LinearProgressIndicator(
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      color: AppColors.royalBlue,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ).animate().fadeIn(delay: 1.seconds),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

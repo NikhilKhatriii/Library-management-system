@@ -14,6 +14,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required UserRole role,
+    bool rememberMe = false,
   }) async {
     try {
       // Simulate network delay
@@ -37,6 +38,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       await _localDataSource.saveUser(user);
+      await _localDataSource.saveRememberMe(rememberMe);
       return Success(user);
     } catch (e) {
       return Failure('Login failed', e is Exception ? e : Exception(e.toString()));

@@ -8,10 +8,15 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/onboarding/application/onboarding_provider.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/dashboard/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/librarian_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/student_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/teacher_dashboard_screen.dart';
+import '../../features/books/presentation/screens/add_book_screen.dart';
+import '../../features/books/presentation/screens/book_detail_screen.dart';
+import '../../features/books/presentation/screens/books_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../../shared/widgets/module_placeholder.dart';
@@ -22,6 +27,7 @@ import 'route_names.dart';
 class _AuthRefreshListenable extends ChangeNotifier {
   _AuthRefreshListenable(Ref ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
+    ref.listen(onboardingProvider, (_, __) => notifyListeners());
   }
 }
 
@@ -33,18 +39,28 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final authState = ref.read(authProvider);
+      final onboardingSeen = ref.read(onboardingProvider);
+      
+      final atSplash = state.matchedLocation == RoutePaths.splash;
+      final atOnboarding = state.matchedLocation == RoutePaths.onboarding;
+
+      if (!onboardingSeen && !atSplash && !atOnboarding) {
+        return RoutePaths.onboarding;
+      }
+
       final loggingIn = {
         RoutePaths.login,
         RoutePaths.register,
         RoutePaths.forgotPassword,
         RoutePaths.otp,
+        RoutePaths.onboarding,
       }.contains(state.matchedLocation);
-      final atSplash = state.matchedLocation == RoutePaths.splash;
 
       switch (authState.status) {
         case AuthStatus.unknown:
           return atSplash ? null : RoutePaths.splash;
         case AuthStatus.unauthenticated:
+          if (atOnboarding && !onboardingSeen) return null;
           return loggingIn ? null : RoutePaths.login;
         case AuthStatus.authenticated:
           return (loggingIn || atSplash) ? RoutePaths.dashboard : null;
@@ -55,6 +71,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.splash,
         name: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.onboarding,
+        name: RouteNames.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: RoutePaths.login,
@@ -95,12 +116,21 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.catalog,
                 name: RouteNames.catalog,
-                builder: (context, state) => const ModulePlaceholder(
-                  title: 'Catalog',
-                  description:
-                      'Full book catalog with search, filters, ISBN/barcode scan '
-                      'and detail pages ships in the next module build.',
-                ),
+                builder: (context, state) => const BooksScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'add',
+                    name: 'add_book',
+                    builder: (context, state) => const AddBookScreen(),
+                  ),
+                  GoRoute(
+                    path: 'details/:id',
+                    name: 'book_details',
+                    builder: (context, state) => BookDetailScreen(
+                      bookId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

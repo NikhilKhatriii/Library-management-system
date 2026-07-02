@@ -44,9 +44,6 @@ dependencies:
   # Charts
   fl_chart: ^0.68.0
 
-  # Notifications
-  flutter_local_notifications: ^17.2.2
-
   # Biometrics
   local_auth: ^2.3.0
 

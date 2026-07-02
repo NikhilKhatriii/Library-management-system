@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../../application/auth_provider.dart';
 import '../../domain/models/user_role.dart';
 import '../widgets/role_selector.dart';
@@ -50,88 +51,115 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Create your account', style: theme.textTheme.headlineMedium)
-                    .animate()
-                    .fadeIn()
-                    .slideY(begin: 0.1, end: 0),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Join LibreFlow in under a minute',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: AppSpacing.xl),
+      body: Container(
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          image: DecorationImage(
+            image: const NetworkImage('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2000'),
+            fit: BoxFit.cover,
+            colorFilter: ColorScheme.fromSeed(seedColor: AppColors.royalBlue).brightness == Brightness.dark
+                ? ColorFilter.mode(Colors.black.withValues(alpha: 0.7), BlendMode.darken)
+                : ColorFilter.mode(Colors.white.withValues(alpha: 0.8), BlendMode.lighten),
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: IconButton.filledTonal(
+                      onPressed: () => context.pop(),
+                      icon: const Icon(Icons.arrow_back_rounded),
+                    ),
+                  ).animate().fadeIn(),
+                  const SizedBox(height: AppSpacing.lg),
+                  
+                  const Icon(
+                    Icons.person_add_rounded,
+                    size: 64,
+                    color: AppColors.royalBlue,
+                  ).animate().scale(duration: 600.ms, curve: Curves.backOut),
+                  const SizedBox(height: AppSpacing.lg),
+                  
+                  Text(
+                    'Create Account',
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                    ),
+                  ).animate().fadeIn(delay: 200.ms),
+                  const SizedBox(height: AppSpacing.xxl),
 
-                Text('Account type', style: theme.textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                RoleSelector(
-                  selected: _selectedRole,
-                  onChanged: (role) => setState(() => _selectedRole = role),
-                ),
-                const SizedBox(height: AppSpacing.lg),
+                  GlassCard(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Select Role', style: theme.textTheme.labelLarge),
+                          const SizedBox(height: AppSpacing.sm),
+                          RoleSelector(
+                            selected: _selectedRole,
+                            onChanged: (role) => setState(() => _selectedRole = role),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
 
-                AppTextField(
-                  label: 'Full name',
-                  controller: _nameController,
-                  hint: 'Jane Doe',
-                  prefixIcon: Icons.person_outline_rounded,
-                  textInputAction: TextInputAction.next,
-                  validator: (v) =>
-                      (v == null || v.trim().length < 2) ? 'Enter your full name' : null,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppTextField(
-                  label: 'Email',
-                  controller: _emailController,
-                  hint: 'you@example.com',
-                  prefixIcon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  validator: Validators.email,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppTextField(
-                  label: 'Password',
-                  controller: _passwordController,
-                  hint: 'At least 8 characters',
-                  prefixIcon: Icons.lock_outline_rounded,
-                  obscureText: true,
-                  textInputAction: TextInputAction.next,
-                  validator: Validators.password,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppTextField(
-                  label: 'Confirm password',
-                  controller: _confirmController,
-                  hint: 'Re-enter your password',
-                  prefixIcon: Icons.lock_outline_rounded,
-                  obscureText: true,
-                  textInputAction: TextInputAction.done,
-                  validator: (v) => v != _passwordController.text
-                      ? 'Passwords do not match'
-                      : null,
-                  onFieldSubmitted: (_) => _submit(),
-                ),
-                const SizedBox(height: AppSpacing.lg),
+                          AppTextField(
+                            label: 'Full Name',
+                            controller: _nameController,
+                            hint: 'Jane Doe',
+                            prefixIcon: Icons.person_outline_rounded,
+                            validator: (v) =>
+                                (v == null || v.trim().length < 2) ? 'Enter your full name' : null,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppTextField(
+                            label: 'Email',
+                            controller: _emailController,
+                            hint: 'you@example.com',
+                            prefixIcon: Icons.mail_outline_rounded,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: Validators.email,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppTextField(
+                            label: 'Password',
+                            controller: _passwordController,
+                            hint: 'At least 8 characters',
+                            prefixIcon: Icons.lock_outline_rounded,
+                            obscureText: true,
+                            validator: Validators.password,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppTextField(
+                            label: 'Confirm Password',
+                            controller: _confirmController,
+                            hint: 'Re-enter password',
+                            prefixIcon: Icons.lock_outline_rounded,
+                            obscureText: true,
+                            validator: (v) => v != _passwordController.text
+                                ? 'Passwords do not match'
+                                : null,
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
 
-                PrimaryButton(
-                  label: 'Create Account',
-                  isLoading: authState.isLoading,
-                  onPressed: authState.isLoading ? null : _submit,
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                Center(
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
+                          PrimaryButton(
+                            label: 'Create Account',
+                            isLoading: authState.isLoading,
+                            onPressed: authState.isLoading ? null : _submit,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0),
+                  
+                  const SizedBox(height: AppSpacing.xl),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Already have an account? '),
                       GestureDetector(
@@ -140,15 +168,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           'Sign in',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
+                  ).animate().fadeIn(delay: 800.ms),
+                ],
+              ),
             ),
           ),
         ),

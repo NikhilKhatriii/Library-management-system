@@ -7,6 +7,7 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/glass_card.dart';
 import '../../application/auth_provider.dart';
 import '../../domain/models/user_role.dart';
 import '../widgets/role_selector.dart';
@@ -40,116 +41,137 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           role: _selectedRole,
           rememberMe: _rememberMe,
         );
-    // Router redirect handles navigation once AuthStatus flips.
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.errorMessage!)),
+        );
+      }
+    });
     final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.xl,
+      body: Container(
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          image: DecorationImage(
+            image: const NetworkImage('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2000'),
+            fit: BoxFit.cover,
+            colorFilter: ColorScheme.fromSeed(seedColor: AppColors.royalBlue).brightness == Brightness.dark
+                ? ColorFilter.mode(Colors.black.withValues(alpha: 0.7), BlendMode.darken)
+                : ColorFilter.mode(Colors.white.withValues(alpha: 0.8), BlendMode.lighten),
           ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome back',
-                  style: theme.textTheme.headlineMedium,
-                ).animate().fadeIn().slideY(begin: 0.1, end: 0),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Sign in to continue to LibreFlow',
-                  style: theme.textTheme.bodyMedium,
-                ).animate().fadeIn(delay: 100.ms),
-                const SizedBox(height: AppSpacing.xl),
-
-                Text('I am signing in as', style: theme.textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                RoleSelector(
-                  selected: _selectedRole,
-                  onChanged: (role) => setState(() => _selectedRole = role),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                AppTextField(
-                  label: 'Email',
-                  controller: _emailController,
-                  hint: 'you@example.com',
-                  prefixIcon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.email],
-                  validator: Validators.email,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppTextField(
-                  label: 'Password',
-                  controller: _passwordController,
-                  hint: 'Enter your password',
-                  prefixIcon: Icons.lock_outline_rounded,
-                  obscureText: true,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.password],
-                  validator: Validators.password,
-                  onFieldSubmitted: (_) => _submit(),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _rememberMe,
-                      onChanged: (v) => setState(() => _rememberMe = v ?? true),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.auto_stories_rounded,
+                    size: 64,
+                    color: AppColors.royalBlue,
+                  ).animate().scale(duration: 600.ms, curve: Curves.backOut),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'LibreFlow',
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
                     ),
-                    const Text('Remember me'),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => context.pushNamed(RouteNames.forgotPassword),
-                      child: const Text('Forgot password?'),
+                  ).animate().fadeIn(delay: 200.ms),
+                  const SizedBox(height: AppSpacing.xxl),
+                  
+                  GlassCard(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sign In',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Welcome back to your workspace',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.hintColor,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+
+                          Text('Select Role', style: theme.textTheme.labelLarge),
+                          const SizedBox(height: AppSpacing.sm),
+                          RoleSelector(
+                            selected: _selectedRole,
+                            onChanged: (role) => setState(() => _selectedRole = role),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+
+                          AppTextField(
+                            label: 'Email',
+                            controller: _emailController,
+                            hint: 'you@example.com',
+                            prefixIcon: Icons.mail_outline_rounded,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: Validators.email,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppTextField(
+                            label: 'Password',
+                            controller: _passwordController,
+                            hint: 'Enter your password',
+                            prefixIcon: Icons.lock_outline_rounded,
+                            obscureText: true,
+                            validator: Validators.password,
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+
+                          Row(
+                            children: [
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Checkbox(
+                                  value: _rememberMe,
+                                  onChanged: (v) => setState(() => _rememberMe = v ?? true),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text('Remember me'),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: () => context.pushNamed(RouteNames.forgotPassword),
+                                child: const Text('Forgot password?'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+
+                          PrimaryButton(
+                            label: 'Sign In',
+                            isLoading: authState.isLoading,
+                            onPressed: authState.isLoading ? null : _submit,
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                PrimaryButton(
-                  label: 'Sign In',
-                  isLoading: authState.isLoading,
-                  onPressed: authState.isLoading ? null : _submit,
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                OutlinedButton.icon(
-                  onPressed: authState.isLoading
-                      ? null
-                      : () async {
-                          await ref.read(authProvider.notifier).login(
-                                email: _emailController.text.trim().isEmpty
-                                    ? 'demo@libreflow.app'
-                                    : _emailController.text.trim(),
-                                password: 'biometric',
-                                role: _selectedRole,
-                                rememberMe: true,
-                              );
-                        },
-                  icon: const Icon(Icons.fingerprint_rounded),
-                  label: const Text('Use Face ID / Touch ID'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-
-                Center(
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
+                  ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0),
+                  
+                  const SizedBox(height: AppSpacing.xl),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text("Don't have an account? "),
                       GestureDetector(
@@ -158,14 +180,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           'Create one',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ],
+                  ).animate().fadeIn(delay: 800.ms),
+                ],
+              ),
             ),
           ),
         ),
