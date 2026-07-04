@@ -1,13 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/result.dart';
 import '../data/datasources/auth_local_datasource.dart';
-import '../data/datasources/firebase_auth_datasource.dart';
-import '../data/repositories/firebase_auth_repository.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/models/user_model.dart';
 import '../domain/models/user_role.dart';
 import '../domain/repositories/auth_repository.dart';
-import '../../../main.dart' show firebaseInitialized;
 
 /// Authentication status used to drive [GoRouter] redirects.
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -41,12 +38,6 @@ class AuthState {
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  if (firebaseInitialized) {
-    return FirebaseAuthRepository(
-      FirebaseAuthDataSource(),
-      HiveAuthLocalDataSource(),
-    );
-  }
   return AuthRepositoryImpl(HiveAuthLocalDataSource());
 });
 

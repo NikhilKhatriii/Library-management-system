@@ -7,13 +7,8 @@ import '../domain/models/transaction_model.dart';
 import '../domain/models/fine_model.dart';
 import '../domain/repositories/activity_repository.dart';
 import '../data/repositories/activity_repository_impl.dart';
-import '../data/repositories/firestore_activity_repository.dart';
-import '../../../main.dart' show firebaseInitialized;
 
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
-  if (firebaseInitialized) {
-    return FirestoreActivityRepository();
-  }
   return ActivityRepositoryImpl(ref.watch(bookRepositoryProvider));
 });
 

@@ -23,6 +23,12 @@ class Book extends Equatable {
     this.isFavorite = false,
     this.rating = 0.0,
     this.tags = const [],
+    this.status = BookStatus.available,
+    this.condition = BookCondition.new_condition,
+    this.edition,
+    this.shelfLocation,
+    this.isDigital = false,
+    this.digitalUrl,
   });
 
   @HiveField(0)
@@ -59,6 +65,18 @@ class Book extends Equatable {
   final double rating;
   @HiveField(16)
   final List<String> tags;
+  @HiveField(17)
+  final BookStatus status;
+  @HiveField(18)
+  final BookCondition condition;
+  @HiveField(19)
+  final String? edition;
+  @HiveField(20)
+  final String? shelfLocation;
+  @HiveField(21)
+  final bool isDigital;
+  @HiveField(22)
+  final String? digitalUrl;
 
   bool get isAvailable => availableCopies > 0;
 

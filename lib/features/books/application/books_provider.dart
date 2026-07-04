@@ -1,22 +1,16 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/utils/result.dart';
-import '../data/datasources/firestore_book_datasource.dart';
-import '../data/repositories/firestore_book_repository.dart';
+import '../data/repositories/mock_book_repository.dart';
 import '../domain/models/book.dart';
 import '../domain/models/author.dart';
 import '../domain/models/category.dart';
 import '../domain/models/publisher.dart';
 import '../domain/repositories/book_repository.dart';
-import '../../../main.dart' show firebaseInitialized;
-import '../data/repositories/mock_book_repository.dart';
 
 part 'books_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 BookRepository bookRepository(BookRepositoryRef ref) {
-  if (firebaseInitialized) {
-    return FirestoreBookRepository(FirestoreBookDataSource());
-  }
   return MockBookRepository();
 }
 

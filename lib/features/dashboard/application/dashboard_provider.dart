@@ -5,13 +5,7 @@ import '../data/repositories/dashboard_repository_impl.dart';
 import '../domain/models/dashboard_stat.dart';
 import '../domain/repositories/dashboard_repository.dart';
 
-import '../data/repositories/firestore_dashboard_repository.dart';
-import '../../../main.dart' show firebaseInitialized;
-
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
-  if (firebaseInitialized) {
-    return FirestoreDashboardRepository();
-  }
   return DashboardRepositoryImpl();
 });
 

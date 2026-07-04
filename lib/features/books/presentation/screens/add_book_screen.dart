@@ -486,7 +486,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                           ),
                         ),
                         DropdownButtonFormField<String>(
-                          value: _selectedCategoryId,
+                          initialValue: _selectedCategoryId,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: theme.brightness == Brightness.dark
