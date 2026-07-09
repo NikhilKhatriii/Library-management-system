@@ -72,32 +72,56 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.splash,
         name: RouteNames.splash,
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => buildAppleTransitionPage(
+          context: context,
+          state: state,
+          child: const SplashScreen(),
+        ),
       ),
       GoRoute(
         path: RoutePaths.onboarding,
         name: RouteNames.onboarding,
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => buildAppleTransitionPage(
+          context: context,
+          state: state,
+          child: const OnboardingScreen(),
+        ),
       ),
       GoRoute(
         path: RoutePaths.login,
         name: RouteNames.login,
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => buildAppleTransitionPage(
+          context: context,
+          state: state,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         path: RoutePaths.register,
         name: RouteNames.register,
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) => buildAppleTransitionPage(
+          context: context,
+          state: state,
+          child: const RegisterScreen(),
+        ),
       ),
       GoRoute(
         path: RoutePaths.forgotPassword,
         name: RouteNames.forgotPassword,
-        builder: (context, state) => const ForgotPasswordScreen(),
+        pageBuilder: (context, state) => buildAppleTransitionPage(
+          context: context,
+          state: state,
+          child: const ForgotPasswordScreen(),
+        ),
       ),
       GoRoute(
         path: RoutePaths.otp,
         name: RouteNames.otp,
-        builder: (context, state) => const OtpScreen(),
+        pageBuilder: (context, state) => buildAppleTransitionPage(
+          context: context,
+          state: state,
+          child: const OtpScreen(),
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -109,7 +133,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.dashboard,
                 name: RouteNames.dashboard,
-                builder: (context, state) => const _RoleDashboard(),
+                pageBuilder: (context, state) => buildAppleTransitionPage(
+                  context: context,
+                  state: state,
+                  child: const _RoleDashboard(),
+                ),
               ),
             ],
           ),
@@ -118,18 +146,30 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.catalog,
                 name: RouteNames.catalog,
-                builder: (context, state) => const BooksScreen(),
+                pageBuilder: (context, state) => buildAppleTransitionPage(
+                  context: context,
+                  state: state,
+                  child: const BooksScreen(),
+                ),
                 routes: [
                   GoRoute(
                     path: 'add',
                     name: 'add_book',
-                    builder: (context, state) => const AddBookScreen(),
+                    pageBuilder: (context, state) => buildAppleTransitionPage(
+                      context: context,
+                      state: state,
+                      child: const AddBookScreen(),
+                    ),
                   ),
                   GoRoute(
                     path: 'details/:id',
                     name: 'book_details',
-                    builder: (context, state) => BookDetailScreen(
-                      bookId: state.pathParameters['id']!,
+                    pageBuilder: (context, state) => buildAppleTransitionPage(
+                      context: context,
+                      state: state,
+                      child: BookDetailScreen(
+                        bookId: state.pathParameters['id']!,
+                      ),
                     ),
                   ),
                 ],
@@ -141,7 +181,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.activity,
                 name: RouteNames.activity,
-                builder: (context, state) => const ActivityScreen(),
+                pageBuilder: (context, state) => buildAppleTransitionPage(
+                  context: context,
+                  state: state,
+                  child: const ActivityScreen(),
+                ),
               ),
             ],
           ),
@@ -150,7 +194,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
-                builder: (context, state) => const ProfileScreen(),
+                pageBuilder: (context, state) => buildAppleTransitionPage(
+                  context: context,
+                  state: state,
+                  child: const ProfileScreen(),
+                ),
               ),
             ],
           ),
@@ -159,7 +207,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.members,
                 name: RouteNames.members,
-                builder: (context, state) => const MembersScreen(),
+                pageBuilder: (context, state) => buildAppleTransitionPage(
+                  context: context,
+                  state: state,
+                  child: const MembersScreen(),
+                ),
               ),
             ],
           ),
@@ -168,7 +220,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.reports,
                 name: RouteNames.reports,
-                builder: (context, state) => const ReportsScreen(),
+                pageBuilder: (context, state) => buildAppleTransitionPage(
+                  context: context,
+                  state: state,
+                  child: const ReportsScreen(),
+                ),
               ),
             ],
           ),
@@ -177,6 +233,30 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Premium Apple-inspired transition: zoom scale zoom-in/out combined with cross-fade.
+CustomTransitionPage<T> buildAppleTransitionPage<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curve = CurveTween(curve: Curves.easeInOutCubic);
+      return FadeTransition(
+        opacity: animation.drive(curve),
+        child: ScaleTransition(
+          scale: animation.drive(Tween<double>(begin: 0.96, end: 1.0).chain(curve)),
+          child: child,
+        ),
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 320),
+    reverseTransitionDuration: const Duration(milliseconds: 280),
+  );
+}
 
 /// Renders the correct dashboard screen for the current user's role.
 class _RoleDashboard extends ConsumerWidget {

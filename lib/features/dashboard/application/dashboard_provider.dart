@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/result.dart';
 import '../../auth/domain/models/user_role.dart';
@@ -38,12 +39,30 @@ final categoryBreakdownProvider = FutureProvider<List<ChartPoint>>((ref) async {
   }
 });
 
-final systemHealthProvider = FutureProvider<SystemHealth>((ref) async {
-  final result = await ref.watch(dashboardRepositoryProvider).getSystemHealth();
-  if (result is Success<SystemHealth>) {
-    return result.data;
-  } else {
-    throw (result as Failure).message;
+final systemHealthProvider = StreamProvider<SystemHealth>((ref) async* {
+  // Start with default values
+  var cpu = 12.5;
+  var ram = 45.8;
+  const storage = 62.1;
+  var uptime = 14400;
+  
+  final random = math.Random();
+  
+  while (true) {
+    yield SystemHealth(
+      cpuUsage: double.parse(cpu.toStringAsFixed(1)),
+      memoryUsage: double.parse(ram.toStringAsFixed(1)),
+      storageUsage: storage,
+      serverStatus: 'Operational',
+      uptimeMinutes: uptime,
+    );
+    
+    await Future<void>.delayed(const Duration(seconds: 3));
+    
+    // Smoothly drift stats to emulate realistic activity fluctuations
+    cpu = (cpu + (random.nextDouble() * 6 - 3)).clamp(5.0, 95.0);
+    ram = (ram + (random.nextDouble() * 2 - 1)).clamp(30.0, 90.0);
+    uptime += 1;
   }
 });
 

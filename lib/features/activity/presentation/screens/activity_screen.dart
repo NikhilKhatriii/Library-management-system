@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -395,17 +396,31 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                       borderRadius: BorderRadius.circular(AppRadius.md),
                       border: Border.all(color: AppColors.primary, width: 2),
                     ),
-                    child: const Stack(
+                    child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Positioned.fill(
+                        const Positioned.fill(
                           child: Center(
                             child: Icon(Icons.camera_alt_rounded, color: Colors.white24, size: 64),
                           ),
                         ),
-                        // Scanner line animation simulation
                         Positioned(
-                          child: Divider(color: AppColors.primary, thickness: 3),
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: AppColors.royalBlue,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.royalBlue.withValues(alpha: 0.8),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+                           .moveY(begin: -80, end: 80, duration: 2.seconds, curve: Curves.easeInOut),
                         ),
                       ],
                     ),
@@ -424,62 +439,65 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                         return const Center(child: CircularProgressIndicator());
                       }
                       final books = (snapshot.data as Success<List<Book>>).data;
-                      return Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: books.length,
-                          itemBuilder: (context, index) {
-                            final book = books[index];
-                            return ListTile(
-                              leading: Image.network(book.coverUrl, width: 36, height: 48, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.book)),
-                              title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                              subtitle: Text('by ${book.authorName}'),
-                              trailing: const Icon(Icons.qr_code_2_rounded),
-                              onTap: () async {
-                                final user = ref.read(authProvider).user!;
-                                final notifier = ref.read(activityProvider.notifier);
+                      return SizedBox(
+                        height: 220,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            itemCount: books.length,
+                            itemBuilder: (context, index) {
+                              final book = books[index];
+                              return ListTile(
+                                leading: Image.network(book.coverUrl, width: 36, height: 48, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.book)),
+                                title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                subtitle: Text('by ${book.authorName}'),
+                                trailing: const Icon(Icons.qr_code_2_rounded),
+                                onTap: () async {
+                                  final user = ref.read(authProvider).user!;
+                                  final notifier = ref.read(activityProvider.notifier);
 
-                                // Check if user already has it
-                                final hasIssued = ref.read(activityProvider).transactions.any(
-                                  (tx) => tx.bookId == book.id && tx.userId == user.id && tx.status == 'active',
-                                );
-
-                                Navigator.pop(context);
-
-                                if (hasIssued) {
-                                  // Return
-                                  final tx = ref.read(activityProvider).transactions.firstWhere(
-                                    (t) => t.bookId == book.id && t.userId == user.id && t.status == 'active',
+                                  // Check if user already has it
+                                  final hasIssued = ref.read(activityProvider).transactions.any(
+                                    (tx) => tx.bookId == book.id && tx.userId == user.id && tx.status == 'active',
                                   );
-                                  await notifier.returnBook(transactionId: tx.id);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('QR Return: "${book.title}" returned!')),
+
+                                  Navigator.pop(context);
+
+                                  if (hasIssued) {
+                                    // Return
+                                    final tx = ref.read(activityProvider).transactions.firstWhere(
+                                      (t) => t.bookId == book.id && t.userId == user.id && t.status == 'active',
                                     );
-                                  }
-                                } else {
-                                  // Issue
-                                  final res = await notifier.issueBook(
-                                    userId: user.id,
-                                    userName: user.name,
-                                    bookId: book.id,
-                                    bookTitle: book.title,
-                                  );
-                                  if (context.mounted) {
-                                    if (res is Success) {
+                                    await notifier.returnBook(transactionId: tx.id);
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('QR Issue: "${book.title}" checked out!')),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text((res as Failure).message)),
+                                        SnackBar(content: Text('QR Return: "${book.title}" returned!')),
                                       );
                                     }
+                                  } else {
+                                    // Issue
+                                    final res = await notifier.issueBook(
+                                      userId: user.id,
+                                      userName: user.name,
+                                      bookId: book.id,
+                                      bookTitle: book.title,
+                                    );
+                                    if (context.mounted) {
+                                      if (res is Success) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('QR Issue: "${book.title}" checked out!')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text((res as Failure).message)),
+                                        );
+                                      }
+                                    }
                                   }
-                                }
-                              },
-                            );
-                          },
+                                },
+                              );
+                            },
+                          ),
                         ),
                       );
                     },

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/result.dart';
 import '../../../auth/domain/models/user_role.dart';
+import '../../../books/domain/models/book.dart';
 import '../../domain/models/dashboard_stat.dart';
 import '../../domain/models/system_health.dart';
 import '../../domain/repositories/dashboard_repository.dart';
@@ -10,47 +12,71 @@ class DashboardRepositoryImpl implements DashboardRepository {
   @override
   Future<Result<List<DashboardStat>>> loadStats(UserRole role) async {
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 600));
+      // Load real dynamic data from Hive box if available
+      final booksBox = await Hive.openBox<Book>('lib_books');
+      final txBox = await Hive.openBox<Map>('activity_transactions');
+      final fineBox = await Hive.openBox<Map>('activity_fines');
+
+      final totalBooks = booksBox.length;
+      final activeTx = txBox.values.where((tx) => tx['status'] == 'active').length;
+      
+      int availableCopies = 0;
+      for (final book in booksBox.values) {
+        availableCopies += book.availableCopies;
+      }
+      
+      final overdueCount = txBox.values.where((tx) {
+        if (tx['status'] != 'active') return false;
+        final dueDateStr = tx['dueDate'] as String?;
+        if (dueDateStr == null) return false;
+        final dueDate = DateTime.tryParse(dueDateStr);
+        return dueDate != null && DateTime.now().isAfter(dueDate);
+      }).length;
+
+      double totalFines = 0.0;
+      for (final fineMap in fineBox.values) {
+        totalFines += (fineMap['amount'] as num?)?.toDouble() ?? 0.0;
+      }
 
       final stats = switch (role) {
-        UserRole.admin || UserRole.librarian => const [
+        UserRole.admin || UserRole.librarian => [
             DashboardStat(
               label: 'Total Books',
-              value: 12480,
+              value: totalBooks > 0 ? totalBooks : 12480,
               icon: Icons.auto_stories_rounded,
               color: AppColors.primary,
               trend: 3.2,
             ),
             DashboardStat(
               label: 'Books Issued',
-              value: 842,
+              value: totalBooks > 0 ? activeTx : 842,
               icon: Icons.outbound_rounded,
               color: AppColors.secondary,
               trend: 1.8,
             ),
             DashboardStat(
               label: 'Available Copies',
-              value: 9310,
+              value: totalBooks > 0 ? availableCopies : 9310,
               icon: Icons.inventory_2_rounded,
               color: AppColors.accent,
               trend: -0.6,
             ),
             DashboardStat(
               label: 'Overdue Books',
-              value: 57,
+              value: totalBooks > 0 ? overdueCount : 57,
               icon: Icons.schedule_rounded,
               color: AppColors.error,
               trend: -4.1,
             ),
             DashboardStat(
               label: 'Fine Collected',
-              value: 18420,
+              value: totalFines > 0.0 ? totalFines.toInt() : 18420,
               icon: Icons.payments_rounded,
               color: AppColors.warning,
               trend: 6.4,
               isCurrency: true,
             ),
-            DashboardStat(
+            const DashboardStat(
               label: 'Active Members',
               value: 3210,
               icon: Icons.groups_rounded,
@@ -84,27 +110,27 @@ class DashboardRepositoryImpl implements DashboardRepository {
               color: AppColors.warning,
             ),
           ],
-        UserRole.student => const [
+        UserRole.student => [
             DashboardStat(
               label: 'Books Borrowed',
-              value: 3,
+              value: totalBooks > 0 ? activeTx : 3,
               icon: Icons.outbound_rounded,
               color: AppColors.primary,
             ),
             DashboardStat(
               label: 'Due Soon',
-              value: 1,
+              value: totalBooks > 0 ? overdueCount : 1,
               icon: Icons.schedule_rounded,
               color: AppColors.warning,
             ),
             DashboardStat(
               label: 'Outstanding Fine',
-              value: 40,
+              value: totalFines > 0.0 ? totalFines.toInt() : 40,
               icon: Icons.payments_rounded,
               color: AppColors.error,
               isCurrency: true,
             ),
-            DashboardStat(
+            const DashboardStat(
               label: 'Wishlist',
               value: 8,
               icon: Icons.inventory_2_rounded,
