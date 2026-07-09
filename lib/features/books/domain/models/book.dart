@@ -3,6 +3,32 @@ import 'package:hive/hive.dart';
 
 part 'book.g.dart';
 
+@HiveType(typeId: 6)
+enum BookStatus {
+  @HiveField(0)
+  available,
+  @HiveField(1)
+  issued,
+  @HiveField(2)
+  reserved,
+  @HiveField(3)
+  lost,
+  @HiveField(4)
+  archived,
+}
+
+@HiveType(typeId: 7)
+enum BookCondition {
+  @HiveField(0)
+  newCondition,
+  @HiveField(1)
+  good,
+  @HiveField(2)
+  fair,
+  @HiveField(3)
+  damaged,
+}
+
 @HiveType(typeId: 2)
 class Book extends Equatable {
   const Book({
@@ -24,7 +50,7 @@ class Book extends Equatable {
     this.rating = 0.0,
     this.tags = const [],
     this.status = BookStatus.available,
-    this.condition = BookCondition.new_condition,
+    this.condition = BookCondition.newCondition,
     this.edition,
     this.shelfLocation,
     this.isDigital = false,

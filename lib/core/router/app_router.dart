@@ -17,6 +17,8 @@ import '../../features/dashboard/presentation/screens/teacher_dashboard_screen.d
 import '../../features/books/presentation/screens/add_book_screen.dart';
 import '../../features/books/presentation/screens/book_detail_screen.dart';
 import '../../features/books/presentation/screens/books_screen.dart';
+import '../../features/members/presentation/screens/members_screen.dart';
+import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/activity/presentation/screens/activity_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
@@ -149,6 +151,24 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
                 builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RoutePaths.members,
+                name: RouteNames.members,
+                builder: (context, state) => const MembersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RoutePaths.reports,
+                name: RouteNames.reports,
+                builder: (context, state) => const ReportsScreen(),
               ),
             ],
           ),

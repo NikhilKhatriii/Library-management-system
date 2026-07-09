@@ -1,6 +1,6 @@
-import '../../../../core/utils/result.dart';
-import '../models/member_model.dart';
-import '../models/member_repository.dart'; // I will fix this name bug below
+import 'package:library_managementsystem/core/utils/result.dart';
+import 'package:library_managementsystem/features/members/domain/models/member_model.dart';
+import 'package:library_managementsystem/features/members/domain/repositories/member_repository.dart';
 
 class MockMemberRepository implements MemberRepository {
   final List<MemberModel> _members = _generateMockMembers();
@@ -14,7 +14,7 @@ class MockMemberRepository implements MemberRepository {
     int pageSize = 20,
   }) async {
     await Future.delayed(const Duration(milliseconds: 700));
-    var filtered = _members;
+    var filtered = List<MemberModel>.from(_members);
     
     if (query != null && query.isNotEmpty) {
       filtered = filtered.where((m) => 
@@ -114,7 +114,6 @@ class MockMemberRepository implements MemberRepository {
         totalBorrowed: 42,
         photoUrl: 'https://i.pravatar.cc/150?u=m2',
       ),
-      // ... generate 20 more
       for (int i = 3; i <= 25; i++)
         MemberModel(
           id: 'm$i',

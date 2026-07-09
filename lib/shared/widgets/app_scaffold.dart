@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/application/auth_provider.dart';
+import '../../features/auth/domain/models/user_role.dart';
 
-/// The persistent bottom-navigation shell wrapping every authenticated
-/// route. Built on [StatefulShellRoute] so each tab keeps its own
-/// navigation stack and scroll position when switching tabs.
-class AppScaffold extends StatelessWidget {
+/// The persistent navigation shell wrapping every authenticated
+/// route. Built on [StatefulShellRoute].
+class AppScaffold extends ConsumerWidget {
   const AppScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user;
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 900;
     final theme = Theme.of(context);
+    final isAdminOrLibrarian = user?.role == UserRole.admin || user?.role == UserRole.librarian;
 
     if (isDesktop) {
       return Scaffold(
@@ -25,6 +29,7 @@ class AppScaffold extends StatelessWidget {
                 index,
                 initialLocation: index == navigationShell.currentIndex,
               ),
+              isAdminOrLibrarian: isAdminOrLibrarian,
             ),
             VerticalDivider(width: 1, thickness: 1, color: theme.dividerColor),
             Expanded(child: navigationShell),
@@ -41,27 +46,39 @@ class AppScaffold extends StatelessWidget {
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.grid_view_outlined),
             selectedIcon: Icon(Icons.grid_view_rounded),
             label: 'Dashboard',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.auto_stories_outlined),
             selectedIcon: Icon(Icons.auto_stories_rounded),
             label: 'Catalog',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.swap_horiz_rounded),
             selectedIcon: Icon(Icons.swap_horizontal_circle_rounded),
             label: 'Activity',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),
             selectedIcon: Icon(Icons.person_rounded),
             label: 'Profile',
           ),
+          if (isAdminOrLibrarian) ...[
+            const NavigationDestination(
+              icon: Icon(Icons.people_outline_rounded),
+              selectedIcon: Icon(Icons.people_rounded),
+              label: 'Members',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.analytics_outlined),
+              selectedIcon: Icon(Icons.analytics_rounded),
+              label: 'Reports',
+            ),
+          ],
         ],
       ),
     );
@@ -72,10 +89,12 @@ class _DesktopSidebar extends StatelessWidget {
   const _DesktopSidebar({
     required this.selectedIndex,
     required this.onDestinationSelected,
+    required this.isAdminOrLibrarian,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+  final bool isAdminOrLibrarian;
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +155,22 @@ class _DesktopSidebar extends StatelessWidget {
             isSelected: selectedIndex == 3,
             onTap: () => onDestinationSelected(3),
           ),
+          if (isAdminOrLibrarian) ...[
+            _SidebarItem(
+              icon: Icons.people_outline_rounded,
+              selectedIcon: Icons.people_rounded,
+              label: 'Members',
+              isSelected: selectedIndex == 4,
+              onTap: () => onDestinationSelected(4),
+            ),
+            _SidebarItem(
+              icon: Icons.analytics_outlined,
+              selectedIcon: Icons.analytics_rounded,
+              label: 'Reports',
+              isSelected: selectedIndex == 5,
+              onTap: () => onDestinationSelected(5),
+            ),
+          ],
           const Spacer(),
           const Divider(indent: 20, endIndent: 20),
           _SidebarItem(

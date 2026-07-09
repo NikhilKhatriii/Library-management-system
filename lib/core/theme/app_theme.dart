@@ -61,7 +61,7 @@ abstract final class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderRadius: const BorderRadius.all(Radius.circular(AppRadius.lg)),
           side: BorderSide(color: border, width: 1.5),
         ),
         margin: EdgeInsets.zero,
@@ -73,21 +73,21 @@ abstract final class AppTheme {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
           borderSide: BorderSide.none,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
           borderSide: BorderSide.none,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
           borderSide: BorderSide(color: AppColors.royalBlue, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+        errorBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
+          borderSide: BorderSide(color: AppColors.error, width: 1.5),
         ),
         hintStyle: TextStyle(color: textSecondary),
       ),

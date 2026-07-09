@@ -1,3 +1,4 @@
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../core/utils/result.dart';
 import '../../domain/models/author.dart';
 import '../../domain/models/book.dart';
@@ -6,10 +7,24 @@ import '../../domain/models/publisher.dart';
 import '../../domain/repositories/book_repository.dart';
 
 class MockBookRepository implements BookRepository {
-  final List<Book> _books = _generateMockBooks();
-  final List<Category> _categories = _generateMockCategories();
-  final List<Author> _authors = _generateMockAuthors();
-  final List<Publisher> _publishers = _generateMockPublishers();
+  static const String _booksBoxName = 'lib_books';
+  
+  Future<Box<Book>> _getBooksBox() async {
+    if (!Hive.isBoxOpen(_booksBoxName)) {
+      return await Hive.openBox<Book>(_booksBoxName);
+    }
+    return Hive.box<Book>(_booksBoxName);
+  }
+
+  Future<void> _seedDatabaseIfNeeded() async {
+    final box = await _getBooksBox();
+    if (box.isEmpty) {
+      final initial = _generateMockBooks();
+      for (final book in initial) {
+        await box.put(book.id, book);
+      }
+    }
+  }
 
   @override
   Future<Result<List<Book>>> getBooks({
@@ -19,82 +34,102 @@ class MockBookRepository implements BookRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    var filteredBooks = _books;
-    if (query != null && query.isNotEmpty) {
-      filteredBooks = filteredBooks
-          .where((b) => b.title.toLowerCase().contains(query.toLowerCase()) || 
-                       b.authorName.toLowerCase().contains(query.toLowerCase()) ||
-                       b.isbn.contains(query))
-          .toList();
-    }
-    if (categoryId != null) {
-      filteredBooks = filteredBooks.where((b) => b.categoryId == categoryId).toList();
-    }
-    if (authorId != null) {
-      filteredBooks = filteredBooks.where((b) => b.authorId == authorId).toList();
-    }
+    try {
+      await _seedDatabaseIfNeeded();
+      final box = await _getBooksBox();
+      var filteredBooks = box.values.toList();
+      
+      if (query != null && query.isNotEmpty) {
+        filteredBooks = filteredBooks
+            .where((b) => b.title.toLowerCase().contains(query.toLowerCase()) || 
+                         b.authorName.toLowerCase().contains(query.toLowerCase()) ||
+                         b.isbn.contains(query))
+            .toList();
+      }
+      if (categoryId != null) {
+        filteredBooks = filteredBooks.where((b) => b.categoryId == categoryId).toList();
+      }
+      if (authorId != null) {
+        filteredBooks = filteredBooks.where((b) => b.authorId == authorId).toList();
+      }
 
-    final startIndex = (page - 1) * pageSize;
-    if (startIndex >= filteredBooks.length) return const Success([]);
-    
-    final end = (startIndex + pageSize) > filteredBooks.length 
-        ? filteredBooks.length 
-        : (startIndex + pageSize);
-        
-    return Success(filteredBooks.sublist(startIndex, end));
+      final startIndex = (page - 1) * pageSize;
+      if (startIndex >= filteredBooks.length) return const Success([]);
+      
+      final end = (startIndex + pageSize) > filteredBooks.length 
+          ? filteredBooks.length 
+          : (startIndex + pageSize);
+          
+      return Success(filteredBooks.sublist(startIndex, end));
+    } catch (e) {
+      return Failure('Failed to retrieve books', e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   @override
   Future<Result<Book>> getBookById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500));
     try {
-      final book = _books.firstWhere((b) => b.id == id);
-      return Success(book);
-    } catch (e) {
+      await _seedDatabaseIfNeeded();
+      final box = await _getBooksBox();
+      final book = box.get(id);
+      if (book != null) {
+        return Success(book);
+      }
       return const Failure('Book not found');
+    } catch (e) {
+      return Failure('Failed to retrieve book', e is Exception ? e : Exception(e.toString()));
     }
   }
 
   @override
   Future<Result<void>> addBook(Book book) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    _books.insert(0, book);
-    return const Success(null);
+    try {
+      final box = await _getBooksBox();
+      await box.put(book.id, book);
+      return const Success(null);
+    } catch (e) {
+      return Failure('Failed to add book', e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   @override
   Future<Result<void>> updateBook(Book book) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    final index = _books.indexWhere((b) => b.id == book.id);
-    if (index != -1) {
-      _books[index] = book;
-      return const Success(null);
+    try {
+      final box = await _getBooksBox();
+      if (box.containsKey(book.id)) {
+        await box.put(book.id, book);
+        return const Success(null);
+      }
+      return const Failure('Book not found');
+    } catch (e) {
+      return Failure('Failed to update book', e is Exception ? e : Exception(e.toString()));
     }
-    return const Failure('Book not found');
   }
 
   @override
   Future<Result<void>> deleteBook(String id) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    _books.removeWhere((b) => b.id == id);
-    return const Success(null);
+    try {
+      final box = await _getBooksBox();
+      await box.delete(id);
+      return const Success(null);
+    } catch (e) {
+      return Failure('Failed to delete book', e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   @override
   Future<Result<List<Category>>> getCategories() async {
-    return Success(_categories);
+    return Success(_generateMockCategories());
   }
 
   @override
   Future<Result<List<Author>>> getAuthors() async {
-    return Success(_authors);
+    return Success(_generateMockAuthors());
   }
 
   @override
   Future<Result<List<Publisher>>> getPublishers() async {
-    return Success(_publishers);
+    return Success(_generateMockPublishers());
   }
 
   static List<Book> _generateMockBooks() {
@@ -115,6 +150,10 @@ class MockBookRepository implements BookRepository {
         totalCopies: 5,
         availableCopies: 3,
         rating: 4.5,
+        status: BookStatus.available,
+        condition: BookCondition.newCondition,
+        edition: 'First Edition',
+        shelfLocation: 'A-102',
       ),
       Book(
         id: '2',
@@ -132,6 +171,10 @@ class MockBookRepository implements BookRepository {
         totalCopies: 8,
         availableCopies: 5,
         rating: 4.8,
+        status: BookStatus.available,
+        condition: BookCondition.good,
+        edition: 'Diamond Anniversary',
+        shelfLocation: 'B-205',
       ),
       Book(
         id: '3',
@@ -150,6 +193,10 @@ class MockBookRepository implements BookRepository {
         availableCopies: 7,
         rating: 4.7,
         tags: const ['Programming', 'Software Engineering'],
+        status: BookStatus.available,
+        condition: BookCondition.newCondition,
+        edition: '1st Edition',
+        shelfLocation: 'T-101',
       ),
       // Add more mock books here for pagination testing
       for (int i = 4; i <= 50; i++)
@@ -169,6 +216,9 @@ class MockBookRepository implements BookRepository {
           totalCopies: 5,
           availableCopies: 2,
           rating: 4.0,
+          status: i % 10 == 0 ? BookStatus.reserved : BookStatus.available,
+          condition: BookCondition.values[i % 4],
+          shelfLocation: 'R-${100 + i}',
         ),
     ];
   }

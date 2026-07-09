@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../shared/widgets/app_background.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../application/activity_provider.dart';
 import '../../domain/models/transaction_model.dart';
@@ -81,16 +82,19 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
           ],
         ),
       ),
-      body: activityState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildActiveTab(context, activeIssues, isAdminOrLibrarian),
-                _buildReservationsTab(context, reservations, isAdminOrLibrarian),
-                _buildFinesAndHistoryTab(context, activityState.fines, history, isAdminOrLibrarian),
-              ],
-            ),
+      body: AppBackgrounds.detail(
+        showGrid: true,
+        child: activityState.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildActiveTab(context, activeIssues, isAdminOrLibrarian),
+                  _buildReservationsTab(context, reservations, isAdminOrLibrarian),
+                  _buildFinesAndHistoryTab(context, activityState.fines, history, isAdminOrLibrarian),
+                ],
+              ),
+      ),
     );
   }
 

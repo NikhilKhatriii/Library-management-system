@@ -1,6 +1,6 @@
 import '../../../../core/utils/result.dart';
 import '../../../auth/domain/models/user_role.dart';
-import '../domain/models/staff_model.dart';
+import '../../domain/models/staff_model.dart';
 
 abstract interface class StaffRepository {
   Future<Result<List<StaffModel>>> getStaff();

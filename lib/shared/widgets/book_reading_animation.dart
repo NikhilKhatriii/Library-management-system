@@ -371,10 +371,10 @@ class _BookReadingPainter extends CustomPainter {
     final headR = w * 0.055;
 
     // Hair color (dark brown/maroon like the reference)
-    final hairColor = const Color(0xFF6B2137);
-    final skinColor = const Color(0xFFF5D0B0);
+    const hairColor = Color(0xFF6B2137);
+    const skinColor = Color(0xFFF5D0B0);
     final shirtColor = primaryColor;
-    final skirtColor = const Color(0xFF1E3A5F);
+    const skirtColor = Color(0xFF1E3A5F);
 
     // -- HEAD --
     // Hair back (behind head)

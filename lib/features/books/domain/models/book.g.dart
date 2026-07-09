@@ -34,13 +34,19 @@ class BookAdapter extends TypeAdapter<Book> {
       isFavorite: fields[14] as bool,
       rating: fields[15] as double,
       tags: (fields[16] as List).cast<String>(),
+      status: fields[17] as BookStatus,
+      condition: fields[18] as BookCondition,
+      edition: fields[19] as String?,
+      shelfLocation: fields[20] as String?,
+      isDigital: fields[21] as bool,
+      digitalUrl: fields[22] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Book obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(23)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -74,7 +80,19 @@ class BookAdapter extends TypeAdapter<Book> {
       ..writeByte(15)
       ..write(obj.rating)
       ..writeByte(16)
-      ..write(obj.tags);
+      ..write(obj.tags)
+      ..writeByte(17)
+      ..write(obj.status)
+      ..writeByte(18)
+      ..write(obj.condition)
+      ..writeByte(19)
+      ..write(obj.edition)
+      ..writeByte(20)
+      ..write(obj.shelfLocation)
+      ..writeByte(21)
+      ..write(obj.isDigital)
+      ..writeByte(22)
+      ..write(obj.digitalUrl);
   }
 
   @override
@@ -84,6 +102,109 @@ class BookAdapter extends TypeAdapter<Book> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is BookAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class BookStatusAdapter extends TypeAdapter<BookStatus> {
+  @override
+  final int typeId = 6;
+
+  @override
+  BookStatus read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return BookStatus.available;
+      case 1:
+        return BookStatus.issued;
+      case 2:
+        return BookStatus.reserved;
+      case 3:
+        return BookStatus.lost;
+      case 4:
+        return BookStatus.archived;
+      default:
+        return BookStatus.available;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, BookStatus obj) {
+    switch (obj) {
+      case BookStatus.available:
+        writer.writeByte(0);
+        break;
+      case BookStatus.issued:
+        writer.writeByte(1);
+        break;
+      case BookStatus.reserved:
+        writer.writeByte(2);
+        break;
+      case BookStatus.lost:
+        writer.writeByte(3);
+        break;
+      case BookStatus.archived:
+        writer.writeByte(4);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookStatusAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class BookConditionAdapter extends TypeAdapter<BookCondition> {
+  @override
+  final int typeId = 7;
+
+  @override
+  BookCondition read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return BookCondition.newCondition;
+      case 1:
+        return BookCondition.good;
+      case 2:
+        return BookCondition.fair;
+      case 3:
+        return BookCondition.damaged;
+      default:
+        return BookCondition.newCondition;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, BookCondition obj) {
+    switch (obj) {
+      case BookCondition.newCondition:
+        writer.writeByte(0);
+        break;
+      case BookCondition.good:
+        writer.writeByte(1);
+        break;
+      case BookCondition.fair:
+        writer.writeByte(2);
+        break;
+      case BookCondition.damaged:
+        writer.writeByte(3);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookConditionAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

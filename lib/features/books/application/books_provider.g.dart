@@ -6,7 +6,7 @@ part of 'books_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$bookRepositoryHash() => r'5ff0283a217e2ec65342dc15ed751ace56da11e0';
+String _$bookRepositoryHash() => r'1624d339baa37f9f9b005a300dc56058405410b2';
 
 /// See also [bookRepository].
 @ProviderFor(bookRepository)
@@ -212,7 +212,7 @@ class _BookDetailsProviderElement extends AutoDisposeFutureProviderElement<Book>
   String get id => (origin as BookDetailsProvider).id;
 }
 
-String _$booksNotifierHash() => r'136ac1920bb94a974102c793d71c4a5071e3c488';
+String _$booksNotifierHash() => r'11789a823bb9e1fbc1e122759b18d27dc0e907a8';
 
 /// See also [BooksNotifier].
 @ProviderFor(BooksNotifier)

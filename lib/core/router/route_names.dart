@@ -12,6 +12,8 @@ abstract final class RouteNames {
   static const String catalog = 'catalog';
   static const String activity = 'activity';
   static const String profile = 'profile';
+  static const String members = 'members';
+  static const String reports = 'reports';
 }
 
 abstract final class RoutePaths {
@@ -26,4 +28,6 @@ abstract final class RoutePaths {
   static const String catalog = '/catalog';
   static const String activity = '/activity';
   static const String profile = '/profile';
+  static const String members = '/members';
+  static const String reports = '/reports';
 }

@@ -1,4 +1,3 @@
-import '../constants/app_colors.dart';
 import '../../features/auth/domain/models/user_role.dart';
 
 /// Granular permissions for the Library Management System.

@@ -8,8 +8,6 @@ class ReportsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Advanced Analytics')),
       body: ListView(
@@ -27,7 +25,7 @@ class ReportsScreen extends StatelessWidget {
             child: _LineChart(),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Wrap(
+          const Wrap(
             spacing: AppSpacing.md,
             runSpacing: AppSpacing.md,
             children: [

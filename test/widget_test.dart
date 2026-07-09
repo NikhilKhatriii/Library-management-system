@@ -14,31 +14,25 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authProvider.overrideWith((ref) => AuthNotifierMock()),
+          authRepositoryProvider.overrideWithValue(DummyAuthRepository()),
           onboardingProvider.overrideWith((ref) => OnboardingNotifierMock()),
         ],
         child: const LibreFlowApp(),
       ),
     );
 
+    // Initial pump
+    await tester.pump();
+
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
 
-class AuthNotifierMock extends AuthNotifier {
-  AuthNotifierMock() : super(DummyAuthRepository());
-
-  @override
-  Future<void> _restoreSession() async {
-    state = const AuthState(status: AuthStatus.unauthenticated);
-  }
-}
-
 class OnboardingNotifierMock extends OnboardingNotifier {
-  @override
-  Future<void> _init() async {
-    state = true;
-  }
+  OnboardingNotifierMock() : super();
+
+  // We don't override _init here, we just let it run or we could use a different super class if it was an interface.
+  // Since it's a smoke test, we just want it to not crash.
 }
 
 class DummyAuthRepository implements AuthRepository {

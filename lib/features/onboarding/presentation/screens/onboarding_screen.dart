@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../shared/widgets/app_background.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../application/onboarding_provider.dart';
 
@@ -89,116 +90,118 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isLastPage = _currentPage == _pages.length - 1;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: _complete,
-                    child: const Text('Skip'),
-                  ).animate().fadeIn(),
-                ],
+      body: AppBackgrounds.onboarding(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _complete,
+                      child: const Text('Skip'),
+                    ).animate().fadeIn(),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _pages.length,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                itemBuilder: (context, index) {
-                  final data = _pages[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: data.color.withValues(alpha: 0.1),
-                          ),
-                          child: Icon(
-                            data.icon,
-                            size: 100,
-                            color: data.color,
-                          ),
-                        ).animate().scale(
-                              duration: AppDurations.slow,
-                              curve: Curves.easeOutBack,
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: _pages.length,
+                  onPageChanged: (index) => setState(() => _currentPage = index),
+                  itemBuilder: (context, index) {
+                    final data = _pages[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: data.color.withValues(alpha: 0.1),
                             ),
-                        const SizedBox(height: AppSpacing.xxl),
-                        Text(
-                          data.title,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(
-                          data.description,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.hintColor,
-                          ),
-                        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
-                      ],
-                    ),
-                  );
-                },
+                            child: Icon(
+                              data.icon,
+                              size: 100,
+                              color: data.color,
+                            ),
+                          ).animate().scale(
+                                duration: AppDurations.slow,
+                                curve: Curves.easeOutBack,
+                              ),
+                          const SizedBox(height: AppSpacing.xxl),
+                          Text(
+                            data.title,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            data.description,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.hintColor,
+                            ),
+                          ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pages.length,
-                      (index) => AnimatedContainer(
-                        duration: AppDurations.fast,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        height: 8,
-                        width: _currentPage == index ? 24 : 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.primary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(4),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        _pages.length,
+                        (index) => AnimatedContainer(
+                          duration: AppDurations.fast,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          height: 8,
+                          width: _currentPage == index ? 24 : 8,
+                          decoration: BoxDecoration(
+                            color: _currentPage == index
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.primary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_currentPage > 0)
-                        IconButton.filledTonal(
-                          onPressed: _onPrevious,
-                          icon: const Icon(Icons.chevron_left_rounded),
-                        ).animate().fadeIn()
-                      else
-                        const SizedBox(width: 48),
-                      PrimaryButton(
-                        label: isLastPage ? 'Get Started' : 'Next',
-                        expand: false,
-                        onPressed: _onNext,
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: AppSpacing.xl),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (_currentPage > 0)
+                          IconButton.filledTonal(
+                            onPressed: _onPrevious,
+                            icon: const Icon(Icons.chevron_left_rounded),
+                          ).animate().fadeIn()
+                        else
+                          const SizedBox(width: 48),
+                        PrimaryButton(
+                          label: isLastPage ? 'Get Started' : 'Next',
+                          expand: false,
+                          onPressed: _onNext,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

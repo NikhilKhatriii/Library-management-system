@@ -3,6 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/result.dart';
 import '../../../auth/domain/models/user_role.dart';
 import '../../domain/models/dashboard_stat.dart';
+import '../../domain/models/system_health.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
@@ -149,5 +150,28 @@ class DashboardRepositoryImpl implements DashboardRepository {
     } catch (e) {
       return Failure('Failed to load category breakdown', e is Exception ? e : Exception(e.toString()));
     }
+  }
+
+  @override
+  Future<Result<SystemHealth>> getSystemHealth() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return const Success(SystemHealth(
+      cpuUsage: 12.5,
+      memoryUsage: 45.8,
+      storageUsage: 62.1,
+      serverStatus: 'Operational',
+      uptimeMinutes: 14400,
+    ));
+  }
+
+  @override
+  Future<Result<List<String>>> getAiInsights() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return const Success([
+      'Demand for "Technology" books has increased by 15% this week.',
+      'Recommended: Increase copies of "Clean Code" due to high reservation rate.',
+      'Alert: 5 books are likely to be overdue in the next 48 hours.',
+      'Insight: Student activity peaks between 2:00 PM and 4:00 PM on Wednesdays.',
+    ]);
   }
 }

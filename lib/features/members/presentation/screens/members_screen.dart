@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/skeleton_loader.dart';
-import '../../application/members_provider.dart';
-import '../domain/models/member_model.dart';
+import 'package:library_managementsystem/core/constants/app_constants.dart';
+import 'package:library_managementsystem/core/constants/app_colors.dart';
+import 'package:library_managementsystem/shared/widgets/empty_state.dart';
+import 'package:library_managementsystem/shared/widgets/skeleton_loader.dart';
+import 'package:library_managementsystem/features/members/domain/models/member_model.dart';
+import 'package:library_managementsystem/features/members/application/members_provider.dart';
 
 class MembersScreen extends ConsumerStatefulWidget {
   const MembersScreen({super.key});
@@ -80,8 +80,8 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
     return ListView.builder(
       padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: 8,
-      itemBuilder: (context, index) => Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      itemBuilder: (context, index) => const Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.md),
         child: SkeletonBox(height: 80, borderRadius: AppRadius.md),
       ),
     );

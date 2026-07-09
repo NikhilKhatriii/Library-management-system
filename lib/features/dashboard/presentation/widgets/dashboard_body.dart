@@ -17,16 +17,125 @@ class DashboardBody extends ConsumerWidget {
     super.key,
     required this.role,
     this.showCharts = false,
+    this.isSliver = false,
   });
 
   final UserRole role;
   final bool showCharts;
+  final bool isSliver;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
     final statsAsync = ref.watch(dashboardStatsProvider(role));
     final theme = Theme.of(context);
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _greeting(),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  Text(
+                    user?.name.split(' ').first ?? role.label,
+                    style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ).animate().fadeIn().slideY(begin: 0.08, end: 0),
+            ),
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: role.color.withValues(alpha: 0.15),
+              child: Text(
+                user?.initials ?? role.label.substring(0, 1),
+                style: TextStyle(color: role.color, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        statsAsync.when(
+          data: (stats) => GridView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: stats.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: AppSpacing.md,
+              crossAxisSpacing: AppSpacing.md,
+              childAspectRatio: 1.35,
+            ),
+            itemBuilder: (context, index) =>
+                StatCard(stat: stats[index], index: index),
+          ),
+          loading: () => GridView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 4,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: AppSpacing.md,
+              crossAxisSpacing: AppSpacing.md,
+              childAspectRatio: 1.35,
+            ),
+            itemBuilder: (context, index) => const _StatSkeleton(),
+          ),
+          error: (err, st) => Text('Could not load stats: $err'),
+        ),
+        if (showCharts) ...[
+          const SizedBox(height: AppSpacing.xl),
+          Text('Weekly Issue Trend', style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: SizedBox(
+                height: 180,
+                child: ref.watch(issueTrendProvider).when(
+                      data: (points) => MiniLineChart(points: points),
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (e, s) => const Center(child: Text('Unable to load trend')),
+                    ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Category Breakdown', style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: ref.watch(categoryBreakdownProvider).when(
+                    data: (points) => MiniPieChart(points: points),
+                    loading: () => const SizedBox(
+                      height: 110,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (e, s) => const Text('Unable to load breakdown'),
+                  ),
+            ),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+      ],
+    );
+
+    if (isSliver) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: content,
+      );
+    }
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -36,100 +145,7 @@ class DashboardBody extends ConsumerWidget {
       },
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _greeting(),
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    Text(
-                      user?.name.split(' ').first ?? role.label,
-                      style: theme.textTheme.headlineMedium,
-                    ),
-                  ],
-                ).animate().fadeIn().slideY(begin: 0.08, end: 0),
-              ),
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: role.color.withValues(alpha: 0.15),
-                child: Text(
-                  user?.initials ?? role.label.substring(0, 1),
-                  style: TextStyle(color: role.color, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          statsAsync.when(
-            data: (stats) => GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: stats.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.35,
-              ),
-              itemBuilder: (context, index) =>
-                  StatCard(stat: stats[index], index: index),
-            ),
-            loading: () => GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 4,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.35,
-              ),
-              itemBuilder: (context, index) => const _StatSkeleton(),
-            ),
-            error: (err, st) => Text('Could not load stats: $err'),
-          ),
-          if (showCharts) ...[
-            const SizedBox(height: AppSpacing.xl),
-            Text('Weekly Issue Trend', style: theme.textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.sm),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: SizedBox(
-                  height: 180,
-                  child: ref.watch(issueTrendProvider).when(
-                        data: (points) => MiniLineChart(points: points),
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (e, s) => const Center(child: Text('Unable to load trend')),
-                      ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text('Category Breakdown', style: theme.textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.sm),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: ref.watch(categoryBreakdownProvider).when(
-                      data: (points) => MiniPieChart(points: points),
-                      loading: () => const SizedBox(
-                        height: 110,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                      error: (e, s) => const Text('Unable to load breakdown'),
-                    ),
-              ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xl),
-        ],
+        children: [content],
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/widgets/app_background.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/glass_card.dart';
@@ -38,17 +39,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
-          image: DecorationImage(
-            image: const NetworkImage('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=2000'),
-            fit: BoxFit.cover,
-            colorFilter: ColorScheme.fromSeed(seedColor: AppColors.royalBlue).brightness == Brightness.dark
-                ? ColorFilter.mode(Colors.black.withValues(alpha: 0.7), BlendMode.darken)
-                : ColorFilter.mode(Colors.white.withValues(alpha: 0.8), BlendMode.lighten),
-          ),
-        ),
+      body: AppBackgrounds.auth(
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),

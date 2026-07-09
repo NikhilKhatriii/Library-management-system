@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../core/utils/result.dart';
-import '../data/repositories/mock_member_repository.dart';
-import '../domain/models/member_model.dart';
-import '../domain/repositories/member_repository.dart';
+import 'package:library_managementsystem/core/utils/result.dart';
+import 'package:library_managementsystem/features/members/domain/models/member_model.dart';
+import 'package:library_managementsystem/features/members/domain/repositories/member_repository.dart';
+import 'package:library_managementsystem/features/members/data/repositories/mock_member_repository.dart';
 
 part 'members_provider.g.dart';
 
