@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../application/books_provider.dart';
@@ -25,6 +26,83 @@ class BookDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error loading book: $err')),
         data: (book) {
+          if (context.isDesktop) {
+            return Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Hero(
+                        tag: 'book-${book.id}',
+                        child: CachedNetworkImage(
+                          imageUrl: book.coverUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: SafeArea(
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black45,
+                            child: BackButton(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverAppBar(
+                        pinned: true,
+                        automaticallyImplyLeading: false,
+                        actions: [
+                          IconButton(
+                            icon: Icon(book.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded),
+                            color: Colors.red,
+                            onPressed: () {},
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.share_rounded),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildHeader(theme, book),
+                              const SizedBox(height: AppSpacing.xl),
+                              _buildInfoGrid(theme, book),
+                              const SizedBox(height: AppSpacing.xl),
+                              Text('Description', style: theme.textTheme.titleMedium),
+                              const SizedBox(height: AppSpacing.sm),
+                              Text(
+                                book.description,
+                                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+                              ),
+                              const SizedBox(height: AppSpacing.xxl),
+                              _buildActions(context, ref, book),
+                              const SizedBox(height: AppSpacing.xl),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+
           return CustomScrollView(
             slivers: [
               _buildAppBar(context, book),
