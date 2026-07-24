@@ -14,46 +14,53 @@ class RoleSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 88,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: UserRole.values.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
-        itemBuilder: (context, index) {
-          final role = UserRole.values[index];
+      child: Row(
+        children: UserRole.values.map((role) {
           final isSelected = role == selected;
-          return GestureDetector(
-            onTap: () => onChanged(role),
-            child: AnimatedContainer(
-              duration: AppDurations.fast,
-              width: 92,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? role.color.withValues(alpha: 0.12)
-                    : Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(
-                  color: isSelected ? role.color : Theme.of(context).dividerColor,
-                  width: isSelected ? 1.5 : 1,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(role.icon, color: role.color, size: 22),
-                  const SizedBox(height: 6),
-                  Text(
-                    role.label,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: isSelected ? role.color : null,
-                          fontSize: 12,
-                        ),
+          final isLast = role == UserRole.values.last;
+          
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: isLast ? 0 : AppSpacing.sm),
+              child: GestureDetector(
+                onTap: () => onChanged(role),
+                child: AnimatedContainer(
+                  duration: AppDurations.fast,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? role.color.withValues(alpha: 0.12)
+                        : Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(
+                      color: isSelected ? role.color : Theme.of(context).dividerColor,
+                      width: isSelected ? 1.5 : 1,
+                    ),
                   ),
-                ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(role.icon, color: role.color, size: 22),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: Text(
+                          role.label,
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: isSelected ? role.color : null,
+                                fontSize: 11,
+                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }
