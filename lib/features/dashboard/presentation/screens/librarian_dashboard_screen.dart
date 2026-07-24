@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../auth/domain/models/user_role.dart';
 import '../widgets/dashboard_body.dart';
+import '../../application/dashboard_provider.dart';
 
-class LibrarianDashboardScreen extends StatelessWidget {
+class LibrarianDashboardScreen extends ConsumerWidget {
   const LibrarianDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Library Overview'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner_rounded),
-            onPressed: () {},
+      body: RefreshIndicator(
+        color: AppColors.royalBlue,
+        onRefresh: () async {
+          ref.invalidate(dashboardStatsProvider(UserRole.librarian));
+          ref.invalidate(systemHealthProvider);
+          ref.invalidate(aiInsightsProvider);
+        },
+        child: const SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: DashboardBody(
+            role: UserRole.librarian,
+            showCharts: true,
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
+        ),
       ),
-      body: const DashboardBody(role: UserRole.librarian, showCharts: true),
     );
   }
 }
