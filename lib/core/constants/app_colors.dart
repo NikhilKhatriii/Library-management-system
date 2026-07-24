@@ -12,10 +12,10 @@ abstract final class AppColors {
   static const Color accent = Color(0xFF10B981); // Emerald Green
 
   // Surfaces
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Soft White
-  static const Color backgroundDark = Color(0xFF0F172A); // Charcoal/Dark Navy
+  static const Color backgroundLight = Color(0xFFF0F4FF); // Soft Lavender/Blue tint
+  static const Color backgroundDark = Color(0xFF0A0F1E); // Deep Black-Blue
   static const Color surfaceLight = Colors.white;
-  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color surfaceDark = Color(0xFF161B2E);
 
   // Semantic
   static const Color success = Color(0xFF10B981);
@@ -31,9 +31,9 @@ abstract final class AppColors {
 
   // Borders / dividers
   static const Color borderLight = Color(0xFFE2E8F0);
-  static const Color borderDark = Color(0xFF334155);
+  static const Color borderDark = Color(0xFF2D3748);
 
-  // Gradients - Apple-like
+  // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -43,7 +43,19 @@ abstract final class AppColors {
   static const LinearGradient indigoGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF818CF8), Color(0xFF6366F1)],
+    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+  );
+
+  static const LinearGradient accentGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF10B981), Color(0xFF059669)],
+  );
+
+  static const LinearGradient lightBgGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFF8FAFC), Color(0xFFE0E7FF)],
   );
 
   /// Fixed palette used to color category tags / charts deterministically.
