@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/application/auth_provider.dart';
 import '../../features/auth/domain/models/user_role.dart';
+import '../../core/utils/responsive_utils.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_constants.dart';
 
-/// The persistent navigation shell wrapping every authenticated
-/// route. Built on [StatefulShellRoute].
 class AppScaffold extends ConsumerWidget {
   const AppScaffold({super.key, required this.navigationShell});
 
@@ -14,12 +15,12 @@ class AppScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
-    final size = MediaQuery.of(context).size;
-    final isDesktop = size.width > 900;
+    final width = MediaQuery.of(context).size.width;
     final theme = Theme.of(context);
     final isAdminOrLibrarian = user?.role == UserRole.admin || user?.role == UserRole.librarian;
 
-    if (isDesktop) {
+    if (width >= ResponsiveBreakpoints.desktop) {
+      final isWide = width >= ResponsiveBreakpoints.wide;
       return Scaffold(
         body: Row(
           children: [
@@ -30,6 +31,63 @@ class AppScaffold extends ConsumerWidget {
                 initialLocation: index == navigationShell.currentIndex,
               ),
               isAdminOrLibrarian: isAdminOrLibrarian,
+              isWide: isWide,
+              userEmail: user?.email ?? '',
+              userName: user?.name ?? '',
+              initials: user?.initials ?? '?',
+            ),
+            VerticalDivider(width: 1, thickness: 1, color: theme.dividerColor),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      );
+    }
+
+    if (width >= ResponsiveBreakpoints.mobile) {
+      return Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+              labelType: NavigationRailLabelType.selected,
+              destinations: [
+                const NavigationRailDestination(
+                  icon: Icon(Icons.grid_view_outlined),
+                  selectedIcon: Icon(Icons.grid_view_rounded),
+                  label: Text('Dashboard'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.auto_stories_outlined),
+                  selectedIcon: Icon(Icons.auto_stories_rounded),
+                  label: Text('Catalog'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.swap_horiz_rounded),
+                  selectedIcon: Icon(Icons.swap_horizontal_circle_rounded),
+                  label: Text('Activity'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.person_outline_rounded),
+                  selectedIcon: Icon(Icons.person_rounded),
+                  label: Text('Profile'),
+                ),
+                if (isAdminOrLibrarian) ...[
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.people_outline_rounded),
+                    selectedIcon: Icon(Icons.people_rounded),
+                    label: Text('Members'),
+                  ),
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.analytics_outlined),
+                    selectedIcon: Icon(Icons.analytics_rounded),
+                    label: Text('Reports'),
+                  ),
+                ],
+              ],
             ),
             VerticalDivider(width: 1, thickness: 1, color: theme.dividerColor),
             Expanded(child: navigationShell),
@@ -90,18 +148,28 @@ class _DesktopSidebar extends StatelessWidget {
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.isAdminOrLibrarian,
+    required this.isWide,
+    required this.userName,
+    required this.userEmail,
+    required this.initials,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
   final bool isAdminOrLibrarian;
+  final bool isWide;
+  final String userName;
+  final String userEmail;
+  final String initials;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final width = isWide ? 280.0 : 240.0;
 
-    return Container(
-      width: 260,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: width,
       color: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
@@ -127,6 +195,20 @@ class _DesktopSidebar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'MAIN',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.hintColor,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+          ),
           _SidebarItem(
             icon: Icons.grid_view_outlined,
             selectedIcon: Icons.grid_view_rounded,
@@ -156,6 +238,21 @@ class _DesktopSidebar extends StatelessWidget {
             onTap: () => onDestinationSelected(3),
           ),
           if (isAdminOrLibrarian) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'MANAGEMENT',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.hintColor,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ),
             _SidebarItem(
               icon: Icons.people_outline_rounded,
               selectedIcon: Icons.people_rounded,
@@ -172,19 +269,69 @@ class _DesktopSidebar extends StatelessWidget {
             ),
           ],
           const Spacer(),
+          if (isWide) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Card(
+                elevation: 0,
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        child: Text(
+                          initials,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userName,
+                              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              userEmail,
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
           const Divider(indent: 20, endIndent: 20),
           _SidebarItem(
             icon: Icons.settings_outlined,
             label: 'Settings',
             onTap: () {},
           ),
-          _SidebarItem(
-            icon: Icons.logout_rounded,
-            label: 'Log out',
-            color: theme.colorScheme.error,
-            onTap: () {},
-          ),
-          const SizedBox(height: 24),
+          if (isWide)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'LibreFlow v1.0.0',
+                style: theme.textTheme.labelSmall?.copyWith(color: theme.hintColor),
+              ),
+            ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -218,6 +365,7 @@ class _SidebarItem extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
+        hoverColor: activeColor.withValues(alpha: 0.05),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -233,11 +381,15 @@ class _SidebarItem extends StatelessWidget {
                 size: 22,
               ),
               const SizedBox(width: 12),
-              Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? activeColor : (color ?? theme.colorScheme.onSurface),
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? activeColor : (color ?? theme.colorScheme.onSurface),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
