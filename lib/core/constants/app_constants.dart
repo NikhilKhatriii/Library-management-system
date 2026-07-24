@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// App-wide, non-color design tokens and static configuration.
 abstract final class AppSpacing {
   static const double xs = 4;
@@ -6,6 +8,16 @@ abstract final class AppSpacing {
   static const double lg = 24;
   static const double xl = 32;
   static const double xxl = 48;
+
+  // Responsive padding dynamically derived from screen properties
+  static double adaptive(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1600) return xxl; // 48
+    if (width >= 1200) return xl;  // 32
+    if (width >= 900) return lg;   // 24
+    if (width >= 600) return lg;   // 24
+    return md;                     // 16
+  }
 }
 
 abstract final class AppRadius {
