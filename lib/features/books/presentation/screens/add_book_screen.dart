@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
@@ -361,202 +362,259 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     final displayedCover = _customCoverController.text.trim().isNotEmpty
         ? _customCoverController.text.trim()
         : _selectedCoverUrl;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Add New Book')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        
+    final coverSelector = Center(
+      child: GestureDetector(
+        onTap: _showCoverSelector,
+        child: Container(
+          width: 120,
+          height: 180,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: Theme.of(context).dividerColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Center(
-                child: GestureDetector(
-                  onTap: _showCoverSelector,
-                  child: Container(
-                    width: 120,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: Border.all(color: Theme.of(context).dividerColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: displayedCover,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, err) => const Center(
-                            child: Icon(Icons.broken_image_rounded, size: 40),
-                          ),
-                        ),
-                        Container(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_a_photo_outlined, size: 28, color: Colors.white),
-                              SizedBox(height: 8),
-                              Text(
-                                'Change Cover',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ).animate().scale(delay: 100.ms, duration: 300.ms, curve: Curves.easeOutBack),
+              CachedNetworkImage(
+                imageUrl: displayedCover,
+                fit: BoxFit.cover,
+                errorWidget: (context, url, err) => const Center(
+                  child: Icon(Icons.broken_image_rounded, size: 40),
+                ),
               ),
-              const SizedBox(height: AppSpacing.xl),
-              AppTextField(
-                label: 'Book Title',
-                controller: _titleController,
-                hint: 'e.g. The Great Gatsby',
-                validator: (v) => v?.trim().isEmpty ?? true ? 'Book title is required' : null,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Author',
-                controller: _authorController,
-                hint: 'e.g. F. Scott Fitzgerald',
-                validator: (v) => v?.trim().isEmpty ?? true ? 'Author name is required' : null,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      label: 'ISBN',
-                      controller: _isbnController,
-                      hint: '13-digit ISBN',
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'ISBN is required';
-                        if (v.trim().length < 10) return 'Invalid ISBN format';
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24),
-                    child: IconButton.filledTonal(
-                      style: IconButton.styleFrom(
-                        minimumSize: const Size(52, 52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                        ),
+              Container(
+                color: Colors.black.withValues(alpha: 0.3),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_a_photo_outlined, size: 28, color: Colors.white),
+                    SizedBox(height: 8),
+                    Text(
+                      'Change Cover',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
                       ),
-                      onPressed: _showScannerSim,
-                      icon: const Icon(Icons.qr_code_scanner_rounded),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 8),
-                          child: Text(
-                            'Category',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                            ),
-                          ),
-                        ),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedCategoryId,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: theme.brightness == Brightness.dark
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.black.withValues(alpha: 0.02),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppRadius.md),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                              vertical: 14,
-                            ),
-                          ),
-                          items: _categories.map((c) {
-                            return DropdownMenuItem<String>(
-                              value: c['id'],
-                              child: Text(c['name']!),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() {
-                                _selectedCategoryId = val;
-                                _selectedCategoryName = _categories.firstWhere((c) => c['id'] == val)['name']!;
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: AppTextField(
-                      label: 'Total Copies',
-                      controller: _copiesController,
-                      hint: 'e.g. 5',
-                      keyboardType: TextInputType.number,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Copies required';
-                        final numVal = int.tryParse(v.trim());
-                        if (numVal == null || numVal < 1) return 'Must be >= 1';
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Publisher',
-                controller: _publisherController,
-                hint: 'e.g. Scribner',
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Description',
-                controller: _descriptionController,
-                hint: 'Enter book synopsis...',
-                maxLines: 4,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              PrimaryButton(
-                label: 'Save Book',
-                onPressed: _submit,
+                  ],
+                ),
               ),
             ],
           ),
         ),
+      ).animate().scale(delay: 100.ms, duration: 300.ms, curve: Curves.easeOutBack),
+    );
+
+    final titleAndAuthorFields = Column(
+      children: [
+        AppTextField(
+          label: 'Book Title',
+          controller: _titleController,
+          hint: 'e.g. The Great Gatsby',
+          validator: (v) => v?.trim().isEmpty ?? true ? 'Book title is required' : null,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppTextField(
+          label: 'Author',
+          controller: _authorController,
+          hint: 'e.g. F. Scott Fitzgerald',
+          validator: (v) => v?.trim().isEmpty ?? true ? 'Author name is required' : null,
+        ),
+      ],
+    );
+
+    final otherFields = Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: AppTextField(
+                label: 'ISBN',
+                controller: _isbnController,
+                hint: '13-digit ISBN',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'ISBN is required';
+                  if (v.trim().length < 10) return 'Invalid ISBN format';
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: IconButton.filledTonal(
+                style: IconButton.styleFrom(
+                  minimumSize: const Size(52, 52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                ),
+                onPressed: _showScannerSim,
+                icon: const Icon(Icons.qr_code_scanner_rounded),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'Category',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedCategoryId,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: theme.brightness == Brightness.dark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.02),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: 14,
+                      ),
+                    ),
+                    items: _categories.map((c) {
+                      return DropdownMenuItem<String>(
+                        value: c['id'],
+                        child: Text(c['name']!),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedCategoryId = val;
+                          _selectedCategoryName = _categories.firstWhere((c) => c['id'] == val)['name']!;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppTextField(
+                label: 'Total Copies',
+                controller: _copiesController,
+                hint: 'e.g. 5',
+                keyboardType: TextInputType.number,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Copies required';
+                  final numVal = int.tryParse(v.trim());
+                  if (numVal == null || numVal < 1) return 'Must be >= 1';
+                  return null;
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppTextField(
+          label: 'Publisher',
+          controller: _publisherController,
+          hint: 'e.g. Scribner',
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppTextField(
+          label: 'Description',
+          controller: _descriptionController,
+          hint: 'Enter book synopsis...',
+          maxLines: 4,
+        ),
+      ],
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Add New Book')),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth > ResponsiveBreakpoints.tablet;
+          
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Center(
+              child: Container(
+                constraints: BoxConstraints(maxWidth: isDesktop ? 1000 : 600),
+                child: Form(
+                  key: _formKey,
+                  child: isDesktop
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  coverSelector,
+                                  const SizedBox(height: AppSpacing.xl),
+                                  titleAndAuthorFields,
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xxl),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                children: [
+                                  otherFields,
+                                  const SizedBox(height: AppSpacing.xxl),
+                                  PrimaryButton(
+                                    label: 'Save Book',
+                                    onPressed: _submit,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            coverSelector,
+                            const SizedBox(height: AppSpacing.xl),
+                            titleAndAuthorFields,
+                            const SizedBox(height: AppSpacing.md),
+                            otherFields,
+                            const SizedBox(height: AppSpacing.xxl),
+                            PrimaryButton(
+                              label: 'Save Book',
+                              onPressed: _submit,
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
