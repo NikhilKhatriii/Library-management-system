@@ -12,6 +12,7 @@ import '../../../auth/application/auth_provider.dart';
 import '../../../auth/domain/models/user_role.dart';
 import '../../../books/application/books_provider.dart';
 import '../../../books/domain/models/book.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/utils/result.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
@@ -109,8 +110,17 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    return GridView.builder(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.responsivePadding,
+        vertical: AppSpacing.lg,
+      ),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 500,
+        mainAxisSpacing: AppSpacing.md,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisExtent: 200,
+      ),
       itemCount: active.length,
       itemBuilder: (context, index) {
         final tx = active[index];
@@ -118,7 +128,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
         final statusColor = isOverdue ? AppColors.error : AppColors.success;
 
         return Card(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          margin: EdgeInsets.zero,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
@@ -136,6 +146,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           if (isAdminOrLibrarian)
@@ -199,7 +211,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
+                const Spacer(),
                 PrimaryButton(
                   label: 'Return Book',
                   onPressed: () async {
@@ -236,51 +248,65 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    return GridView.builder(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.responsivePadding,
+        vertical: AppSpacing.lg,
+      ),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 500,
+        mainAxisSpacing: AppSpacing.md,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisExtent: 100,
+      ),
       itemCount: reserved.length,
       itemBuilder: (context, index) {
         final tx = reserved[index];
         return Card(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            title: Text(
-              tx.bookTitle,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                if (isAdminOrLibrarian) Text('Reserved by: ${tx.userName}'),
-                Text('Date: ${_formatDate(tx.issueDate)}'),
-              ],
-            ),
-            trailing: isAdminOrLibrarian
-                ? ElevatedButton(
-                    onPressed: () async {
-                      // Admin issues the reserved book
-                      final notifier = ref.read(activityProvider.notifier);
-                      // Return/cancel old status, issue fresh active checkout
-                      await notifier.returnBook(transactionId: tx.id);
-                      final res = await notifier.issueBook(
-                        userId: tx.userId,
-                        userName: tx.userName,
-                        bookId: tx.bookId,
-                        bookTitle: tx.bookTitle,
-                      );
-                      if (context.mounted) {
-                        if (res is Success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Issued reserved book to member!')),
-                          );
+          margin: EdgeInsets.zero,
+          child: Center(
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Text(
+                tx.bookTitle,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 4),
+                  if (isAdminOrLibrarian) Text('Reserved by: ${tx.userName}', maxLines: 1, overflow: TextOverflow.ellipsis,),
+                  Text('Date: ${_formatDate(tx.issueDate)}'),
+                ],
+              ),
+              trailing: isAdminOrLibrarian
+                  ? ElevatedButton(
+                      onPressed: () async {
+                        // Admin issues the reserved book
+                        final notifier = ref.read(activityProvider.notifier);
+                        // Return/cancel old status, issue fresh active checkout
+                        await notifier.returnBook(transactionId: tx.id);
+                        final res = await notifier.issueBook(
+                          userId: tx.userId,
+                          userName: tx.userName,
+                          bookId: tx.bookId,
+                          bookTitle: tx.bookTitle,
+                        );
+                        if (context.mounted) {
+                          if (res is Success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Issued reserved book to member!')),
+                            );
+                          }
                         }
-                      }
-                    },
-                    child: const Text('Issue Now'),
-                  )
-                : const Chip(label: Text('In Queue')),
+                      },
+                      child: const Text('Issue Now'),
+                    )
+                  : const Chip(label: Text('In Queue')),
+            ),
           ),
         );
       },
@@ -289,80 +315,88 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
 
   Widget _buildFinesAndHistoryTab(
       BuildContext context, List<FineModel> fines, List<TransactionModel> history, bool isAdminOrLibrarian) {
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      children: [
-        if (fines.isNotEmpty) ...[
-          Text('Pending Fines', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: AppSpacing.sm),
-          ...fines.map((fine) => Card(
-                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: ListTile(
-                  title: Text(
-                    fine.bookTitle,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (isAdminOrLibrarian) Text('Member: ${fine.userName}'),
-                      Text('Overdue fine accrued on ${_formatDate(fine.createdAt)}'),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '\$${fine.amount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: fine.status == 'unpaid' ? AppColors.error : AppColors.success,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: ListView(
+          padding: EdgeInsets.symmetric(
+            horizontal: context.responsivePadding,
+            vertical: AppSpacing.lg,
+          ),
+          children: [
+            if (fines.isNotEmpty) ...[
+              Text('Pending Fines', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: AppSpacing.sm),
+              ...fines.map((fine) => Card(
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: ListTile(
+                      title: Text(
+                        fine.bookTitle,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(width: 12),
-                      if (fine.status == 'unpaid')
-                        ElevatedButton(
-                          onPressed: () async {
-                            final notifier = ref.read(activityProvider.notifier);
-                            final res = await notifier.payFine(fineId: fine.id);
-                            if (context.mounted && res is Success) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Fine marked as paid!')),
-                              );
-                            }
-                          },
-                          child: const Text('Pay'),
-                        )
-                      else
-                        const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
-                    ],
-                  ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isAdminOrLibrarian) Text('Member: ${fine.userName}'),
+                          Text('Overdue fine accrued on ${_formatDate(fine.createdAt)}'),
+                        ],
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '\$${fine.amount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: fine.status == 'unpaid' ? AppColors.error : AppColors.success,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          if (fine.status == 'unpaid')
+                            ElevatedButton(
+                              onPressed: () async {
+                                final notifier = ref.read(activityProvider.notifier);
+                                final res = await notifier.payFine(fineId: fine.id);
+                                if (context.mounted && res is Success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Fine marked as paid!')),
+                                  );
+                                }
+                              },
+                              child: const Text('Pay'),
+                            )
+                          else
+                            const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
+                        ],
+                      ),
+                    ),
+                  )),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+            Text('Returned History', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: AppSpacing.sm),
+            if (history.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: Center(child: Text('No returned books yet.')),
                 ),
-              )),
-          const SizedBox(height: AppSpacing.lg),
-        ],
-        Text('Returned History', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: AppSpacing.sm),
-        if (history.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(AppSpacing.lg),
-              child: Center(child: Text('No returned books yet.')),
-            ),
-          )
-        else
-          ...history.map((tx) => Card(
-                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: ListTile(
-                  title: Text(tx.bookTitle),
-                  subtitle: Text(
-                    'Returned on ${_formatDate(tx.returnDate ?? DateTime.now())}',
-                  ),
-                  trailing: const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
-                ),
-              )),
-      ],
+              )
+            else
+              ...history.map((tx) => Card(
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: ListTile(
+                      title: Text(tx.bookTitle),
+                      subtitle: Text(
+                        'Returned on ${_formatDate(tx.returnDate ?? DateTime.now())}',
+                      ),
+                      trailing: const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
+                    ),
+                  )),
+          ],
+        ),
+      ),
     );
   }
 
