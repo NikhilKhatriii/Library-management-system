@@ -140,6 +140,6 @@ class ActivityNotifier extends StateNotifier<ActivityState> {
 final activityProvider = StateNotifierProvider<ActivityNotifier, ActivityState>((ref) {
   final user = ref.watch(authProvider).user;
   final repository = ref.watch(activityRepositoryProvider);
-  final isAdminOrLibrarian = user?.role == UserRole.admin || user?.role == UserRole.librarian;
-  return ActivityNotifier(repository, user?.id, isAdminOrLibrarian);
+  final isLibrarian = user?.role == UserRole.librarian;
+  return ActivityNotifier(repository, user?.id, isLibrarian);
 });
