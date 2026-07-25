@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/app_background.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../application/activity_provider.dart';
 import '../../domain/models/transaction_model.dart';
@@ -12,7 +10,6 @@ import '../../../auth/application/auth_provider.dart';
 import '../../../auth/domain/models/user_role.dart';
 import '../../../books/application/books_provider.dart';
 import '../../../books/domain/models/book.dart';
-import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/utils/result.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
@@ -47,8 +44,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
-    final isAdminOrLibrarian =
-        user.role == UserRole.admin || user.role == UserRole.librarian;
+    final isLibrarian = user.role == UserRole.librarian;
 
     // Filter transactions
     final activeIssues = activityState.transactions
@@ -84,24 +80,21 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
           ],
         ),
       ),
-      body: AppBackgrounds.detail(
-        showGrid: true,
-        child: activityState.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildActiveTab(context, activeIssues, isAdminOrLibrarian),
-                  _buildReservationsTab(context, reservations, isAdminOrLibrarian),
-                  _buildFinesAndHistoryTab(context, activityState.fines, history, isAdminOrLibrarian),
-                ],
-              ),
-      ),
+      body: activityState.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildActiveTab(context, activeIssues, isLibrarian),
+                _buildReservationsTab(context, reservations, isLibrarian),
+                _buildFinesAndHistoryTab(context, activityState.fines, history, isLibrarian),
+              ],
+            ),
     );
   }
 
   Widget _buildActiveTab(
-      BuildContext context, List<TransactionModel> active, bool isAdminOrLibrarian) {
+      BuildContext context, List<TransactionModel> active, bool isLibrarian) {
     if (active.isEmpty) {
       return const _EmptyState(
         icon: Icons.outbound_rounded,
@@ -110,17 +103,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
       );
     }
 
-    return GridView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.responsivePadding,
-        vertical: AppSpacing.lg,
-      ),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 500,
-        mainAxisSpacing: AppSpacing.md,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisExtent: 200,
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: active.length,
       itemBuilder: (context, index) {
         final tx = active[index];
@@ -128,7 +112,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
         final statusColor = isOverdue ? AppColors.error : AppColors.success;
 
         return Card(
-          margin: EdgeInsets.zero,
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
@@ -146,11 +130,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          if (isAdminOrLibrarian)
+                          if (isLibrarian)
                             Text(
                               'Issued to: ${tx.userName}',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -211,7 +193,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                     ),
                   ],
                 ),
-                const Spacer(),
+                const SizedBox(height: AppSpacing.md),
                 PrimaryButton(
                   label: 'Return Book',
                   onPressed: () async {
@@ -239,7 +221,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
   }
 
   Widget _buildReservationsTab(
-      BuildContext context, List<TransactionModel> reserved, bool isAdminOrLibrarian) {
+      BuildContext context, List<TransactionModel> reserved, bool isLibrarian) {
     if (reserved.isEmpty) {
       return const _EmptyState(
         icon: Icons.bookmark_rounded,
@@ -248,65 +230,51 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
       );
     }
 
-    return GridView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.responsivePadding,
-        vertical: AppSpacing.lg,
-      ),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 500,
-        mainAxisSpacing: AppSpacing.md,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisExtent: 100,
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: reserved.length,
       itemBuilder: (context, index) {
         final tx = reserved[index];
         return Card(
-          margin: EdgeInsets.zero,
-          child: Center(
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              title: Text(
-                tx.bookTitle,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 4),
-                  if (isAdminOrLibrarian) Text('Reserved by: ${tx.userName}', maxLines: 1, overflow: TextOverflow.ellipsis,),
-                  Text('Date: ${_formatDate(tx.issueDate)}'),
-                ],
-              ),
-              trailing: isAdminOrLibrarian
-                  ? ElevatedButton(
-                      onPressed: () async {
-                        // Admin issues the reserved book
-                        final notifier = ref.read(activityProvider.notifier);
-                        // Return/cancel old status, issue fresh active checkout
-                        await notifier.returnBook(transactionId: tx.id);
-                        final res = await notifier.issueBook(
-                          userId: tx.userId,
-                          userName: tx.userName,
-                          bookId: tx.bookId,
-                          bookTitle: tx.bookTitle,
-                        );
-                        if (context.mounted) {
-                          if (res is Success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Issued reserved book to member!')),
-                            );
-                          }
-                        }
-                      },
-                      child: const Text('Issue Now'),
-                    )
-                  : const Chip(label: Text('In Queue')),
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            title: Text(
+              tx.bookTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                if (isLibrarian) Text('Reserved by: ${tx.userName}'),
+                Text('Date: ${_formatDate(tx.issueDate)}'),
+              ],
+            ),
+            trailing: isLibrarian
+                ? ElevatedButton(
+                    onPressed: () async {
+                      // Admin issues the reserved book
+                      final notifier = ref.read(activityProvider.notifier);
+                      // Return/cancel old status, issue fresh active checkout
+                      await notifier.returnBook(transactionId: tx.id);
+                      final res = await notifier.issueBook(
+                        userId: tx.userId,
+                        userName: tx.userName,
+                        bookId: tx.bookId,
+                        bookTitle: tx.bookTitle,
+                      );
+                      if (context.mounted) {
+                        if (res is Success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Issued reserved book to member!')),
+                          );
+                        }
+                      }
+                    },
+                    child: const Text('Issue Now'),
+                  )
+                : const Chip(label: Text('In Queue')),
           ),
         );
       },
@@ -314,89 +282,81 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
   }
 
   Widget _buildFinesAndHistoryTab(
-      BuildContext context, List<FineModel> fines, List<TransactionModel> history, bool isAdminOrLibrarian) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 800),
-        child: ListView(
-          padding: EdgeInsets.symmetric(
-            horizontal: context.responsivePadding,
-            vertical: AppSpacing.lg,
-          ),
-          children: [
-            if (fines.isNotEmpty) ...[
-              Text('Pending Fines', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: AppSpacing.sm),
-              ...fines.map((fine) => Card(
-                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: ListTile(
-                      title: Text(
-                        fine.bookTitle,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+      BuildContext context, List<FineModel> fines, List<TransactionModel> history, bool isLibrarian) {
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      children: [
+        if (fines.isNotEmpty) ...[
+          Text('Pending Fines', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: AppSpacing.sm),
+          ...fines.map((fine) => Card(
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: ListTile(
+                  title: Text(
+                    fine.bookTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isLibrarian) Text('Member: ${fine.userName}'),
+                      Text('Overdue fine accrued on ${_formatDate(fine.createdAt)}'),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '\$${fine.amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: fine.status == 'unpaid' ? AppColors.error : AppColors.success,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (isAdminOrLibrarian) Text('Member: ${fine.userName}'),
-                          Text('Overdue fine accrued on ${_formatDate(fine.createdAt)}'),
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '\$${fine.amount.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              color: fine.status == 'unpaid' ? AppColors.error : AppColors.success,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          if (fine.status == 'unpaid')
-                            ElevatedButton(
-                              onPressed: () async {
-                                final notifier = ref.read(activityProvider.notifier);
-                                final res = await notifier.payFine(fineId: fine.id);
-                                if (context.mounted && res is Success) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Fine marked as paid!')),
-                                  );
-                                }
-                              },
-                              child: const Text('Pay'),
-                            )
-                          else
-                            const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
-                        ],
-                      ),
-                    ),
-                  )),
-              const SizedBox(height: AppSpacing.lg),
-            ],
-            Text('Returned History', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: AppSpacing.sm),
-            if (history.isEmpty)
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.lg),
-                  child: Center(child: Text('No returned books yet.')),
+                      const SizedBox(width: 12),
+                      if (fine.status == 'unpaid')
+                        ElevatedButton(
+                          onPressed: () async {
+                            final notifier = ref.read(activityProvider.notifier);
+                            final res = await notifier.payFine(fineId: fine.id);
+                            if (context.mounted && res is Success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Fine marked as paid!')),
+                              );
+                            }
+                          },
+                          child: const Text('Pay'),
+                        )
+                      else
+                        const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
+                    ],
+                  ),
                 ),
-              )
-            else
-              ...history.map((tx) => Card(
-                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: ListTile(
-                      title: Text(tx.bookTitle),
-                      subtitle: Text(
-                        'Returned on ${_formatDate(tx.returnDate ?? DateTime.now())}',
-                      ),
-                      trailing: const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
-                    ),
-                  )),
-          ],
-        ),
-      ),
+              )),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+        Text('Returned History', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        const SizedBox(height: AppSpacing.sm),
+        if (history.isEmpty)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: Center(child: Text('No returned books yet.')),
+            ),
+          )
+        else
+          ...history.map((tx) => Card(
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: ListTile(
+                  title: Text(tx.bookTitle),
+                  subtitle: Text(
+                    'Returned on ${_formatDate(tx.returnDate ?? DateTime.now())}',
+                  ),
+                  trailing: const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
+                ),
+              )),
+      ],
     );
   }
 
@@ -430,31 +390,17 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                       borderRadius: BorderRadius.circular(AppRadius.md),
                       border: Border.all(color: AppColors.primary, width: 2),
                     ),
-                    child: Stack(
+                    child: const Stack(
                       alignment: Alignment.center,
                       children: [
-                        const Positioned.fill(
+                        Positioned.fill(
                           child: Center(
                             child: Icon(Icons.camera_alt_rounded, color: Colors.white24, size: 64),
                           ),
                         ),
+                        // Scanner line animation simulation
                         Positioned(
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.royalBlue,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.royalBlue.withValues(alpha: 0.8),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-                           .moveY(begin: -80, end: 80, duration: 2.seconds, curve: Curves.easeInOut),
+                          child: Divider(color: AppColors.primary, thickness: 3),
                         ),
                       ],
                     ),
@@ -473,65 +419,62 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen>
                         return const Center(child: CircularProgressIndicator());
                       }
                       final books = (snapshot.data as Success<List<Book>>).data;
-                      return SizedBox(
-                        height: 220,
-                        child: Scrollbar(
-                          thumbVisibility: true,
-                          child: ListView.builder(
-                            itemCount: books.length,
-                            itemBuilder: (context, index) {
-                              final book = books[index];
-                              return ListTile(
-                                leading: Image.network(book.coverUrl, width: 36, height: 48, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.book)),
-                                title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                                subtitle: Text('by ${book.authorName}'),
-                                trailing: const Icon(Icons.qr_code_2_rounded),
-                                onTap: () async {
-                                  final user = ref.read(authProvider).user!;
-                                  final notifier = ref.read(activityProvider.notifier);
+                      return Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: books.length,
+                          itemBuilder: (context, index) {
+                            final book = books[index];
+                            return ListTile(
+                              leading: Image.network(book.coverUrl, width: 36, height: 48, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.book)),
+                              title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              subtitle: Text('by ${book.authorName}'),
+                              trailing: const Icon(Icons.qr_code_2_rounded),
+                              onTap: () async {
+                                final user = ref.read(authProvider).user!;
+                                final notifier = ref.read(activityProvider.notifier);
 
-                                  // Check if user already has it
-                                  final hasIssued = ref.read(activityProvider).transactions.any(
-                                    (tx) => tx.bookId == book.id && tx.userId == user.id && tx.status == 'active',
+                                // Check if user already has it
+                                final hasIssued = ref.read(activityProvider).transactions.any(
+                                  (tx) => tx.bookId == book.id && tx.userId == user.id && tx.status == 'active',
+                                );
+
+                                Navigator.pop(context);
+
+                                if (hasIssued) {
+                                  // Return
+                                  final tx = ref.read(activityProvider).transactions.firstWhere(
+                                    (t) => t.bookId == book.id && t.userId == user.id && t.status == 'active',
                                   );
-
-                                  Navigator.pop(context);
-
-                                  if (hasIssued) {
-                                    // Return
-                                    final tx = ref.read(activityProvider).transactions.firstWhere(
-                                      (t) => t.bookId == book.id && t.userId == user.id && t.status == 'active',
+                                  await notifier.returnBook(transactionId: tx.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('QR Return: "${book.title}" returned!')),
                                     );
-                                    await notifier.returnBook(transactionId: tx.id);
-                                    if (context.mounted) {
+                                  }
+                                } else {
+                                  // Issue
+                                  final res = await notifier.issueBook(
+                                    userId: user.id,
+                                    userName: user.name,
+                                    bookId: book.id,
+                                    bookTitle: book.title,
+                                  );
+                                  if (context.mounted) {
+                                    if (res is Success) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('QR Return: "${book.title}" returned!')),
+                                        SnackBar(content: Text('QR Issue: "${book.title}" checked out!')),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text((res as Failure).message)),
                                       );
                                     }
-                                  } else {
-                                    // Issue
-                                    final res = await notifier.issueBook(
-                                      userId: user.id,
-                                      userName: user.name,
-                                      bookId: book.id,
-                                      bookTitle: book.title,
-                                    );
-                                    if (context.mounted) {
-                                      if (res is Success) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('QR Issue: "${book.title}" checked out!')),
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text((res as Failure).message)),
-                                        );
-                                      }
-                                    }
                                   }
-                                },
-                              );
-                            },
-                          ),
+                                }
+                              },
+                            );
+                          },
                         ),
                       );
                     },
