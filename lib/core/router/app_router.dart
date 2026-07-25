@@ -10,7 +10,6 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/onboarding/application/onboarding_provider.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
-import '../../features/dashboard/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/librarian_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/student_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/teacher_dashboard_screen.dart';
@@ -266,8 +265,6 @@ class _RoleDashboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).user?.role;
     switch (role) {
-      case UserRole.admin:
-        return const AdminDashboardScreen();
       case UserRole.librarian:
         return const LibrarianDashboardScreen();
       case UserRole.teacher:
