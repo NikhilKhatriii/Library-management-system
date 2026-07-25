@@ -54,26 +54,11 @@ enum AppPermission {
 abstract final class PermissionService {
   static bool hasPermission(UserRole role, AppPermission permission) {
     return switch (role) {
-      UserRole.admin => true, // Admin has everything
-      UserRole.librarian => _librarianPermissions.contains(permission),
+      UserRole.librarian => true, // Librarian now has full control
       UserRole.teacher => _teacherPermissions.contains(permission),
       UserRole.student => _studentPermissions.contains(permission),
     };
   }
-
-  static const _librarianPermissions = {
-    AppPermission.manageStudents,
-    AppPermission.manageShelves,
-    AppPermission.addBooks,
-    AppPermission.editBooks,
-    AppPermission.generateIdentifiers,
-    AppPermission.issueBooks,
-    AppPermission.returnBooks,
-    AppPermission.renewBooks,
-    AppPermission.approveReservations,
-    AppPermission.markBooksLost,
-    AppPermission.exportData,
-  };
 
   static const _teacherPermissions = {
     AppPermission.renewBooks,
