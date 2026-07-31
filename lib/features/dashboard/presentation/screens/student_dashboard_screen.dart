@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/domain/models/user_role.dart';
 import '../widgets/dashboard_body.dart';
+import '../../application/dashboard_provider.dart';
 
-class StudentDashboardScreen extends StatelessWidget {
+class StudentDashboardScreen extends ConsumerWidget {
   const StudentDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Library'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(dashboardStatsProvider(UserRole.student));
+        },
+        child: const SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: DashboardBody(role: UserRole.student),
+        ),
       ),
-      body: const DashboardBody(role: UserRole.student),
     );
   }
 }
