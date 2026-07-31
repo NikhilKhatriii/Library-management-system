@@ -130,7 +130,7 @@ class _BooksScreenState extends ConsumerState<BooksScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(booksNotifierProvider);
     final user = ref.watch(authProvider).user;
-    final isStaff = user?.role == UserRole.admin || user?.role == UserRole.librarian;
+    final isStaff = user?.role == UserRole.librarian;
 
     return Scaffold(
       appBar: AppBar(
@@ -193,10 +193,10 @@ class _BooksScreenState extends ConsumerState<BooksScreen> {
     return GridView.builder(
       padding: const EdgeInsets.all(AppSpacing.md),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
+        maxCrossAxisExtent: 220,
         mainAxisSpacing: AppSpacing.md,
         crossAxisSpacing: AppSpacing.md,
-        childAspectRatio: 0.7,
+        childAspectRatio: 0.68,
       ),
       itemCount: 10,
       itemBuilder: (context, index) => const BookSkeleton(),
@@ -208,10 +208,10 @@ class _BooksScreenState extends ConsumerState<BooksScreen> {
       controller: _scrollController,
       padding: const EdgeInsets.all(AppSpacing.md),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
+        maxCrossAxisExtent: 220,
         mainAxisSpacing: AppSpacing.md,
         crossAxisSpacing: AppSpacing.md,
-        childAspectRatio: 0.7,
+        childAspectRatio: 0.68,
       ),
       itemCount: state.books.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
