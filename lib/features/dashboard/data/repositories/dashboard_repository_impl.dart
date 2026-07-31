@@ -39,7 +39,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
       }
 
       final stats = switch (role) {
-        UserRole.admin || UserRole.librarian => [
+        UserRole.librarian => [
             DashboardStat(
               label: 'Total Books',
               value: totalBooks > 0 ? totalBooks : 12480,
