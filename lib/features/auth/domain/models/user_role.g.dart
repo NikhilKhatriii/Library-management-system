@@ -13,8 +13,6 @@ class UserRoleAdapter extends TypeAdapter<UserRole> {
   @override
   UserRole read(BinaryReader reader) {
     switch (reader.readByte()) {
-      case 0:
-        return UserRole.admin;
       case 1:
         return UserRole.librarian;
       case 2:
@@ -22,16 +20,13 @@ class UserRoleAdapter extends TypeAdapter<UserRole> {
       case 3:
         return UserRole.teacher;
       default:
-        return UserRole.admin;
+        return UserRole.librarian;
     }
   }
 
   @override
   void write(BinaryWriter writer, UserRole obj) {
     switch (obj) {
-      case UserRole.admin:
-        writer.writeByte(0);
-        break;
       case UserRole.librarian:
         writer.writeByte(1);
         break;
