@@ -41,7 +41,7 @@ class BookDetailScreen extends ConsumerWidget {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      Positioned(
+                      const Positioned(
                         top: 16,
                         left: 16,
                         child: SafeArea(
