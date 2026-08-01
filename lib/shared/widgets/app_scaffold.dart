@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/application/auth_provider.dart';
 import '../../features/auth/domain/models/user_role.dart';
 import '../../core/utils/responsive_utils.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_constants.dart';
 
 class AppScaffold extends ConsumerWidget {
   const AppScaffold({super.key, required this.navigationShell});
@@ -17,10 +15,10 @@ class AppScaffold extends ConsumerWidget {
     final user = ref.watch(authProvider).user;
     final width = MediaQuery.of(context).size.width;
     final theme = Theme.of(context);
-    final isAdminOrLibrarian = user?.role == UserRole.admin || user?.role == UserRole.librarian;
+    final isLibrarian = user?.role == UserRole.librarian;
 
-    if (width >= ResponsiveBreakpoints.desktop) {
-      final isWide = width >= ResponsiveBreakpoints.wide;
+    if (width >= ResponsiveBreakpoints.tablet) {
+      final isWide = width >= ResponsiveBreakpoints.desktop;
       return Scaffold(
         body: Row(
           children: [
@@ -30,7 +28,7 @@ class AppScaffold extends ConsumerWidget {
                 index,
                 initialLocation: index == navigationShell.currentIndex,
               ),
-              isAdminOrLibrarian: isAdminOrLibrarian,
+              isLibrarian: isLibrarian,
               isWide: isWide,
               userEmail: user?.email ?? '',
               userName: user?.name ?? '',
@@ -75,7 +73,7 @@ class AppScaffold extends ConsumerWidget {
                   selectedIcon: Icon(Icons.person_rounded),
                   label: Text('Profile'),
                 ),
-                if (isAdminOrLibrarian) ...[
+                if (isLibrarian) ...[
                   const NavigationRailDestination(
                     icon: Icon(Icons.people_outline_rounded),
                     selectedIcon: Icon(Icons.people_rounded),
@@ -125,7 +123,7 @@ class AppScaffold extends ConsumerWidget {
             selectedIcon: Icon(Icons.person_rounded),
             label: 'Profile',
           ),
-          if (isAdminOrLibrarian) ...[
+          if (isLibrarian) ...[
             const NavigationDestination(
               icon: Icon(Icons.people_outline_rounded),
               selectedIcon: Icon(Icons.people_rounded),
@@ -147,7 +145,7 @@ class _DesktopSidebar extends StatelessWidget {
   const _DesktopSidebar({
     required this.selectedIndex,
     required this.onDestinationSelected,
-    required this.isAdminOrLibrarian,
+    required this.isLibrarian,
     required this.isWide,
     required this.userName,
     required this.userEmail,
@@ -156,7 +154,7 @@ class _DesktopSidebar extends StatelessWidget {
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
-  final bool isAdminOrLibrarian;
+  final bool isLibrarian;
   final bool isWide;
   final String userName;
   final String userEmail;
@@ -237,7 +235,7 @@ class _DesktopSidebar extends StatelessWidget {
             isSelected: selectedIndex == 3,
             onTap: () => onDestinationSelected(3),
           ),
-          if (isAdminOrLibrarian) ...[
+          if (isLibrarian) ...[
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -345,7 +343,6 @@ class _SidebarItem extends StatelessWidget {
     required this.label,
     this.isSelected = false,
     required this.onTap,
-    this.color,
   });
 
   final IconData icon;
@@ -353,12 +350,11 @@ class _SidebarItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final activeColor = color ?? theme.colorScheme.primary;
+    final activeColor = theme.colorScheme.primary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -377,7 +373,7 @@ class _SidebarItem extends StatelessWidget {
             children: [
               Icon(
                 isSelected ? (selectedIcon ?? icon) : icon,
-                color: isSelected ? activeColor : (color ?? theme.hintColor),
+                color: isSelected ? activeColor : theme.hintColor,
                 size: 22,
               ),
               const SizedBox(width: 12),
@@ -386,7 +382,7 @@ class _SidebarItem extends StatelessWidget {
                   label,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? activeColor : (color ?? theme.colorScheme.onSurface),
+                    color: isSelected ? activeColor : theme.colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
