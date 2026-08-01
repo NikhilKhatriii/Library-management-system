@@ -24,7 +24,7 @@ class MockStaffRepository implements StaffRepository {
         id: 's2',
         name: 'Bob Miller',
         email: 'bob.m@library.edu',
-        role: UserRole.admin,
+        role: UserRole.librarian,
         department: 'IT Infrastructure',
         lastLogin: DateTime.now().subtract(const Duration(days: 1)),
         isOnline: false,
