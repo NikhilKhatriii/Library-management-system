@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/models/book.dart';
 
 class BookCard extends StatelessWidget {
@@ -13,6 +14,9 @@ class BookCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    
+    // Adjust padding and text scale based on screen size
+    final cardPadding = context.isMobile ? AppSpacing.sm : AppSpacing.md;
 
     return GestureDetector(
       onTap: onTap,
@@ -50,8 +54,8 @@ class BookCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: cardPadding,
+                    right: cardPadding,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
@@ -77,7 +81,7 @@ class BookCard extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.sm),
+                padding: EdgeInsets.all(cardPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -85,6 +89,7 @@ class BookCard extends StatelessWidget {
                       book.title,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: context.isMobile ? null : 16,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -94,6 +99,7 @@ class BookCard extends StatelessWidget {
                       book.authorName,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                        fontSize: context.isMobile ? null : 14,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -101,12 +107,13 @@ class BookCard extends StatelessWidget {
                     const Spacer(),
                     Row(
                       children: [
-                        Icon(Icons.star_rounded, size: 14, color: Colors.amber[600]),
-                        const SizedBox(width: 2),
+                        Icon(Icons.star_rounded, size: context.isMobile ? 14 : 16, color: Colors.amber[600]),
+                        const SizedBox(width: 4),
                         Text(
                           book.rating.toString(),
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: context.isMobile ? null : 13,
                           ),
                         ),
                         const Spacer(),
@@ -114,6 +121,7 @@ class BookCard extends StatelessWidget {
                           book.categoryName,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.primary,
+                            fontSize: context.isMobile ? null : 13,
                           ),
                         ),
                       ],
